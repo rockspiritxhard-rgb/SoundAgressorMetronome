@@ -1,3 +1,4 @@
+html
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -297,8 +298,9 @@
             <p>• Повторный клик на ту же песню - остановка метронома</p>
             <p>• Клик на другую песню - переключение на неё и запуск её метронома</p>
             <p>• При необходимости отрегулируйте темп</p>
-            <p>• Для песен 1-18: метроном звучит восьмыми нотами (акцент на каждой первой восьмой такта)</p>
-            <p>• Для песни 19: метроном звучит четвертями (акцент на первой четверти)</p>
+            <p>• Для песен 1-2, 4-18, 19: метроном звучит восьмыми нотами (акцент на каждой первой восьмой)</p>
+            <p>• Для песни 3: метроном звучит четвертями (акцент на каждой первой четверти)</p>
+            <p>• Во всех песнях акцент чередуется: акцент - без акцента - акцент - без акцента</p>
         </div>
 
         <footer>
@@ -309,25 +311,25 @@
     <script>
         // Данные песен (можно изменить темпы)
         const songs = [
-            { id: 1, name: "Песня 1", tempo: 120 },
-            { id: 2, name: "Песня 2", tempo: 130 },
-            { id: 3, name: "Песня 3", tempo: 140 },
-            { id: 4, name: "Песня 4", tempo: 110 },
-            { id: 5, name: "Песня 5", tempo: 100 },
-            { id: 6, name: "Песня 6", tempo: 150 },
-            { id: 7, name: "Песня 7", tempo: 90 },
-            { id: 8, name: "Песня 8", tempo: 160 },
-            { id: 9, name: "Песня 9", tempo: 80 },
-            { id: 10, name: "Песня 10", tempo: 170 },
-            { id: 11, name: "Песня 11", tempo: 180 },
-            { id: 12, name: "Песня 12", tempo: 95 },
-            { id: 13, name: "Песня 13", tempo: 125 },
-            { id: 14, name: "Песня 14", tempo: 135 },
-            { id: 15, name: "Песня 15", tempo: 145 },
-            { id: 16, name: "Песня 16", tempo: 155 },
-            { id: 17, name: "Песня 17", tempo: 165 },
-            { id: 18, name: "Песня 18", tempo: 175 },
-            { id: 19, name: "Песня 19", tempo: 70 }
+            { id: 1, name: "Give It Up", tempo: 124, rhythm: "eighth" },
+            { id: 2, name: "Beer Drinkers & Hell Raisers", tempo: 133, rhythm: "eighth" },
+            { id: 3, name: "Jesus Just Left Chicago", tempo: 72, rhythm: "quarter" }, // Теперь четвертные
+            { id: 4, name: "I Got the Six", tempo: 150, rhythm: "eighth" },
+            { id: 5, name: "Penthouse Eyes", tempo: 112, rhythm: "eighth" },
+            { id: 6, name: "Concrete and Steel", tempo: 127, rhythm: "eighth" },
+            { id: 7, name: "I Thank You", tempo: 111, rhythm: "eighth" },
+            { id: 8, name: "Sharp Dressed Man", tempo: 125, rhythm: "eighth" },
+            { id: 9, name: "Gimme All Your Lovin’", tempo: 123, rhythm: "eighth" },
+            { id: 10, name: "What’s Up with That", tempo: 112, rhythm: "eighth" },
+            { id: 11, name: "Tush", tempo: 144, rhythm: "eighth" },
+            { id: 12, name: "I Need You Tonight", tempo: 98, rhythm: "eighth" },
+            { id: 13, name: "Burger Man", tempo: 145, rhythm: "eighth" },
+            { id: 14, name: "Punk Ass Boyfriend", tempo: 89, rhythm: "eighth" },
+            { id: 15, name: "Thug", tempo: 120, rhythm: "eighth" },
+            { id: 16, name: "Dirty Dog", tempo: 137, rhythm: "eighth" },
+            { id: 17, name: "Tell It", tempo: 92, rhythm: "eighth" },
+            { id: 18, name: "Sleeping Bag", tempo: 112, rhythm: "eighth" },
+            { id: 19, name: "Can’t Stop Rockin’", tempo: 144, rhythm: "eighth" } // Теперь восьмые
         ];
 
         // Глобальные переменные
@@ -362,6 +364,7 @@
                     <div class="song-number">${song.id}</div>
                     <div class="song-name">${song.name}</div>
                     <div class="song-tempo">${song.tempo} BPM</div>
+                    <div class="song-rhythm">${song.rhythm === "quarter" ? "¼" : "⅛"}</div>
                 `;
                 
                 songCard.addEventListener('click', () => toggleSong(song));
@@ -422,14 +425,24 @@
         function updateBeatIndicator() {
             beatIndicator.innerHTML = '';
             
-            // Показываем 4 восьмые ноты для наглядности
-            const dotsCount = 4;
-            
-            for (let i = 0; i < dotsCount; i++) {
-                const dot = document.createElement('div');
-                dot.className = 'beat-dot';
-                dot.dataset.index = i;
-                beatIndicator.appendChild(dot);
+            if (currentSong.rhythm === "quarter") {
+                // Для песен с четвертными нотами: показываем 2 точки
+                const dotsCount = 2;
+                for (let i = 0; i < dotsCount; i++) {
+                    const dot = document.createElement('div');
+                    dot.className = 'beat-dot';
+                    dot.dataset.index = i;
+                    beatIndicator.appendChild(dot);
+                }
+            } else {
+                // Для песен с восьмыми нотами: показываем 4 точки
+                const dotsCount = 4;
+                for (let i = 0; i < dotsCount; i++) {
+                    const dot = document.createElement('div');
+                    dot.className = 'beat-dot';
+                    dot.dataset.index = i;
+                    beatIndicator.appendChild(dot);
+                }
             }
             
             updateDotColors();
@@ -442,18 +455,13 @@
             dots.forEach((dot, index) => {
                 const dotIndex = parseInt(dot.dataset.index);
                 
-                if (currentSong.id === 19) {
-                    // Для песни 19: только две четверти - акцент на первой
-                    if (dotIndex < 2) {
-                        dot.classList.toggle('accent', dotIndex === 0);
-                        dot.classList.toggle('normal', dotIndex === 1);
-                    } else {
-                        dot.style.display = 'none';
-                    }
+                if (currentSong.rhythm === "quarter") {
+                    // Для четвертных нот: акцент на первой, вторая без акцента
+                    dot.classList.toggle('accent', dotIndex === 0);
+                    dot.classList.toggle('normal', dotIndex === 1);
                 } else {
-                    // Для песен 1-18: чередование акцентов для восьмых нот
-                    dot.style.display = 'block';
-                    // Акцент на каждой первой восьмой такта (четные индексы: 0, 2, 4, 6...)
+                    // Для восьмых нот: акцент через одну ноту
+                    // Чередование: 0-акцент, 1-нет, 2-акцент, 3-нет
                     dot.classList.toggle('accent', dotIndex % 2 === 0);
                     dot.classList.toggle('normal', dotIndex % 2 === 1);
                 }
@@ -462,8 +470,8 @@
 
         // Обновление информации о ритме
         function updateRhythmInfo() {
-            if (currentSong.id === 19) {
-                rhythmInfo.textContent = "Ритм: Четвертные ноты (акцент на первой)";
+            if (currentSong.rhythm === "quarter") {
+                rhythmInfo.textContent = "Ритм: Четвертные ноты (акцент на каждой первой четверти)";
             } else {
                 rhythmInfo.textContent = "Ритм: Восьмые ноты (акцент на каждой первой восьмой)";
             }
@@ -537,27 +545,20 @@
             while (nextNoteTime < audioContext.currentTime + scheduleAheadTime) {
                 scheduleNote(nextNoteTime);
                 
-                if (currentSong.id === 19) {
-                    // Для песни 19: четвертные ноты (интервал = 60 / tempo)
+                if (currentSong.rhythm === "quarter") {
+                    // Для четвертных нот: интервал = 60 / tempo
                     nextNoteTime += (60.0 / tempo);
                 } else {
-                    // Для песен 1-18: восьмые ноты (интервал = 60 / tempo / 2)
+                    // Для восьмых нот: интервал = 60 / tempo / 2
                     nextNoteTime += (60.0 / tempo) / 2;
                 }
             }
         }
 
         function scheduleNote(time) {
-            // Определяем, акцентированный ли это бит
-            let isAccented;
-            
-            if (currentSong.id === 19) {
-                // Для песни 19: акцент только на первой четверти каждого такта
-                isAccented = (beatCounter % 2 === 0); // Акцент на каждой первой четверти (четные beatCounter)
-            } else {
-                // Для песен 1-18: акцент на каждой первой восьмой такта
-                isAccented = (beatCounter % 2 === 0); // Акцент на четных beatCounter (0, 2, 4, 6...)
-            }
+            // Для всех песен акцент чередуется: акцент - без акцента - акцент - без акцента
+            // Это просто проверка на четность счетчика
+            const isAccented = (beatCounter % 2 === 0);
             
             // Воспроизводим звук
             playMetronomeSound(time, isAccented);
@@ -607,11 +608,11 @@
             // Определяем, какую точку активировать
             let dotIndex;
             
-            if (currentSong.id === 19) {
-                // Для песни 19: показываем только 2 точки для четвертей
+            if (currentSong.rhythm === "quarter") {
+                // Для четвертных нот: 2 точки
                 dotIndex = currentBeatIndex % 2;
             } else {
-                // Для песен 1-18: показываем 4 точки для восьмых
+                // Для восьмых нот: 4 точки
                 dotIndex = currentBeatIndex % 4;
             }
             
