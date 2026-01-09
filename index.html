@@ -10,6 +10,7 @@
             padding: 0;
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
+            touch-action: pan-y; /* Разрешаем вертикальную прокрутку */
         }
 
         html, body {
@@ -21,6 +22,7 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             color: #fff;
+            overscroll-behavior: none; /* Убираем bounce-эффект на iOS */
         }
 
         .container {
@@ -28,6 +30,7 @@
             display: flex;
             flex-direction: column;
             padding: 0;
+            overflow: hidden;
         }
 
         header {
@@ -35,6 +38,7 @@
             padding: 8px 6px 4px 6px;
             flex-shrink: 0;
             background: rgba(0, 0, 0, 0.3);
+            user-select: none;
         }
 
         h1 {
@@ -63,6 +67,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            user-select: none;
         }
 
         .status-playing {
@@ -76,13 +81,20 @@
 
         .songs-container {
             flex: 1;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
+            overflow-y: scroll; /* Включаем вертикальную прокрутку */
+            -webkit-overflow-scrolling: touch; /* Плавная прокрутка на iOS */
             padding: 0 6px 6px 6px;
             display: flex;
             flex-direction: column;
             gap: 4px;
-            max-height: calc(100vh - 120px);
+            scrollbar-width: none; /* Скрываем скроллбар для Firefox */
+        }
+
+        /* Скрываем скроллбар для Chrome/Safari */
+        .songs-container::-webkit-scrollbar {
+            display: none;
+            width: 0;
+            height: 0;
         }
 
         .song-card {
@@ -96,12 +108,19 @@
             align-items: center;
             min-height: 44px;
             user-select: none;
+            -webkit-user-select: none;
             touch-action: manipulation;
+            flex-shrink: 0; /* Предотвращаем сжатие карточек */
         }
 
         .song-card:active {
             background: rgba(255, 255, 255, 0.12);
             transform: scale(0.99);
+        }
+
+        /* Отключаем выделение при долгом тапе */
+        .song-card:focus {
+            outline: none;
         }
 
         .song-card.active {
@@ -211,6 +230,7 @@
             justify-content: space-between;
             align-items: center;
             flex-shrink: 0;
+            user-select: none;
         }
 
         .song-info-text {
@@ -238,6 +258,7 @@
             margin-left: 8px;
             flex-shrink: 0;
             min-height: 26px;
+            touch-action: manipulation;
         }
 
         .stop-btn:active {
@@ -285,7 +306,6 @@
             .songs-container {
                 padding: 0 4px 4px 4px;
                 gap: 3px;
-                max-height: calc(100vh - 100px);
             }
             
             .current-song-info {
@@ -326,10 +346,6 @@
             .song-tempo, .song-rhythm {
                 font-size: 0.6rem;
             }
-            
-            .songs-container {
-                max-height: calc(100vh - 90px);
-            }
         }
 
         /* Альбомная ориентация */
@@ -353,7 +369,6 @@
                 display: grid;
                 grid-template-columns: repeat(2, 1fr);
                 gap: 4px;
-                max-height: 100vh;
                 overflow-y: auto;
             }
             
@@ -381,14 +396,20 @@
             }
         }
 
-        /* Скрываем скроллбар */
-        .songs-container::-webkit-scrollbar {
-            width: 0;
-            height: 0;
+        /* Улучшение для прокрутки на iOS */
+        .scrollable-area {
+            -webkit-overflow-scrolling: touch;
+            overflow-scrolling: touch;
         }
 
-        .songs-container {
-            scrollbar-width: none;
+        /* Предотвращаем выделение текста при прокрутке */
+        .no-select {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
     </style>
 </head>
@@ -461,13 +482,18 @@
         const currentSongInfo = document.getElementById('current-song-info');
         const stopBtn = document.getElementById('stop-btn');
 
+        // Переменные для обработки прокрутки
+        let isScrolling = false;
+        let scrollStartY = 0;
+        let scrollStartTime = 0;
+
         // Инициализация песен
         function initSongs() {
             songsContainer.innerHTML = '';
             
             songs.forEach(song => {
                 const songCard = document.createElement('div');
-                songCard.className = 'song-card';
+                songCard.className = 'song-card no-select';
                 songCard.innerHTML = `
                     <div class="song-number">${song.id}</div>
                     <div class="song-content">
@@ -480,7 +506,10 @@
                     <div class="play-indicator"></div>
                 `;
                 
+                // Обработчик клика/тапа
                 songCard.addEventListener('click', () => toggleSong(song));
+                
+                // Обработчик touchstart для предотвращения выделения
                 songCard.addEventListener('touchstart', (e) => {
                     e.preventDefault();
                     toggleSong(song);
@@ -490,8 +519,49 @@
             });
         }
 
+        // Настройка обработчиков прокрутки
+        function setupScrollHandlers() {
+            // Обработчик начала прокрутки
+            songsContainer.addEventListener('touchstart', (e) => {
+                if (e.target.closest('.song-card')) {
+                    // Если тап по карточке - это не начало прокрутки
+                    return;
+                }
+                
+                isScrolling = true;
+                scrollStartY = e.touches[0].clientY;
+                scrollStartTime = Date.now();
+            }, { passive: true });
+
+            // Обработчик движения при прокрутке
+            songsContainer.addEventListener('touchmove', (e) => {
+                if (!isScrolling) return;
+                
+                e.preventDefault(); // Предотвращаем стандартное поведение
+                
+                const currentY = e.touches[0].clientY;
+                const deltaY = scrollStartY - currentY;
+                
+                // Прокручиваем контейнер
+                songsContainer.scrollTop += deltaY;
+                scrollStartY = currentY;
+            }, { passive: false });
+
+            // Обработчик окончания прокрутки
+            songsContainer.addEventListener('touchend', () => {
+                isScrolling = false;
+            }, { passive: true });
+
+            // Обработчик отмены прокрутки
+            songsContainer.addEventListener('touchcancel', () => {
+                isScrolling = false;
+            }, { passive: true });
+        }
+
         // Переключение песни
         function toggleSong(song) {
+            if (isScrolling) return; // Если была прокрутка - не обрабатываем клик
+            
             if (currentSong && currentSong.id === song.id) {
                 if (isPlaying) {
                     stopMetronome();
@@ -629,6 +699,7 @@
         // Инициализация
         document.addEventListener('DOMContentLoaded', function() {
             initSongs();
+            setupScrollHandlers();
             updateStatus();
             
             window.addEventListener('beforeunload', function() {
