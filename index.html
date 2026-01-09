@@ -12,52 +12,57 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             color: #fff;
-            min-height: 100vh;
-            padding: 0;
-            overflow-x: hidden;
         }
 
         .container {
-            max-width: 100%;
-            margin: 0 auto;
-            padding: 0;
             height: 100vh;
             display: flex;
             flex-direction: column;
+            padding: 0;
         }
 
         header {
             text-align: center;
-            padding: 12px 10px 8px 10px;
+            padding: 8px 6px 4px 6px;
             flex-shrink: 0;
             background: rgba(0, 0, 0, 0.3);
         }
 
         h1 {
-            font-size: 1.3rem;
-            margin-bottom: 4px;
+            font-size: 1.1rem;
+            margin-bottom: 2px;
             background: linear-gradient(90deg, #00dbde, #fc00ff);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
+            line-height: 1.2;
         }
 
         .subtitle {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             color: #aaa;
+            line-height: 1;
         }
 
         .song-status {
             text-align: center;
-            padding: 8px 10px;
-            font-size: 0.9rem;
-            min-height: 20px;
+            padding: 6px;
+            font-size: 0.8rem;
             flex-shrink: 0;
             background: rgba(0, 0, 0, 0.2);
+            min-height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .status-playing {
@@ -69,39 +74,34 @@
             color: #ff416c;
         }
 
-        .songs-list-container {
+        .songs-container {
             flex: 1;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
-            padding: 0 10px;
-        }
-
-        .songs-list {
+            padding: 0 6px 6px 6px;
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            padding-bottom: 10px;
+            gap: 4px;
+            max-height: calc(100vh - 120px);
         }
 
         .song-card {
             background: rgba(255, 255, 255, 0.08);
-            border-radius: 8px;
-            padding: 10px 12px;
+            border-radius: 6px;
+            padding: 6px 8px;
             cursor: pointer;
             transition: all 0.2s ease;
-            border: 2px solid transparent;
+            border: 1.5px solid transparent;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            min-height: 55px;
+            min-height: 44px;
             user-select: none;
             touch-action: manipulation;
-            text-align: left;
         }
 
         .song-card:active {
-            transform: scale(0.99);
             background: rgba(255, 255, 255, 0.12);
+            transform: scale(0.99);
         }
 
         .song-card.active {
@@ -116,41 +116,38 @@
         }
 
         @keyframes pulse {
-            0% { box-shadow: 0 0 3px rgba(0, 176, 155, 0.3); }
-            50% { box-shadow: 0 0 6px rgba(0, 176, 155, 0.6); }
-            100% { box-shadow: 0 0 3px rgba(0, 176, 155, 0.3); }
-        }
-
-        .song-left-section {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex: 1;
-            min-width: 0; /* Для корректного обрезания текста */
+            0% { box-shadow: 0 0 2px rgba(0, 176, 155, 0.3); }
+            50% { box-shadow: 0 0 4px rgba(0, 176, 155, 0.6); }
+            100% { box-shadow: 0 0 2px rgba(0, 176, 155, 0.3); }
         }
 
         .song-number {
-            font-size: 1.3rem;
+            font-size: 1rem;
             font-weight: bold;
             color: #00dbde;
-            min-width: 30px;
+            min-width: 22px;
             text-align: center;
+            line-height: 1;
         }
 
         .song-card.playing .song-number {
             color: #00b09b;
         }
 
-        .song-info {
+        .song-content {
             flex: 1;
-            min-width: 0; /* Для корректного обрезания текста */
+            display: flex;
+            flex-direction: column;
+            margin-left: 8px;
+            min-width: 0;
         }
 
         .song-name {
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             color: #fff;
             font-weight: 500;
-            margin-bottom: 2px;
+            line-height: 1.1;
+            margin-bottom: 1px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -158,30 +155,33 @@
 
         .song-details {
             display: flex;
-            gap: 8px;
             align-items: center;
+            gap: 6px;
         }
 
         .song-tempo {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             color: #aaa;
+            line-height: 1;
         }
 
         .song-rhythm {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             color: #ffcc00;
             font-weight: bold;
             background: rgba(255, 204, 0, 0.1);
-            padding: 1px 6px;
-            border-radius: 8px;
+            padding: 1px 5px;
+            border-radius: 6px;
+            line-height: 1;
         }
 
         .play-indicator {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
             background: #ff416c;
             opacity: 0;
+            margin-left: 8px;
             flex-shrink: 0;
         }
 
@@ -201,9 +201,9 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(0, 0, 0, 0.9);
-            padding: 10px 12px;
-            font-size: 0.9rem;
+            background: rgba(0, 0, 0, 0.95);
+            padding: 8px 10px;
+            font-size: 0.8rem;
             backdrop-filter: blur(10px);
             border-top: 1px solid rgba(255, 255, 255, 0.15);
             z-index: 100;
@@ -229,85 +229,132 @@
             background: linear-gradient(90deg, #ff416c, #ff4b2b);
             color: white;
             border: none;
-            border-radius: 15px;
-            padding: 6px 14px;
-            font-size: 0.85rem;
+            border-radius: 12px;
+            padding: 5px 10px;
+            font-size: 0.75rem;
             cursor: pointer;
             font-weight: bold;
             white-space: nowrap;
-            margin-left: 10px;
+            margin-left: 8px;
             flex-shrink: 0;
+            min-height: 26px;
         }
 
         .stop-btn:active {
             transform: scale(0.95);
         }
 
-        /* Для очень маленьких экранов (iPhone SE и подобные) */
-        @media (max-height: 600px) {
+        /* Адаптация для очень маленьких экранов */
+        @media (max-height: 700px) {
             .song-card {
-                padding: 8px 10px;
-                min-height: 50px;
+                min-height: 40px;
+                padding: 5px 6px;
             }
             
             .song-number {
-                font-size: 1.2rem;
-                min-width: 25px;
+                font-size: 0.95rem;
+                min-width: 20px;
             }
             
             .song-name {
-                font-size: 0.9rem;
+                font-size: 0.8rem;
             }
             
             .song-tempo, .song-rhythm {
-                font-size: 0.75rem;
+                font-size: 0.65rem;
             }
             
             header {
-                padding: 10px 8px 6px 8px;
+                padding: 6px 4px 3px 4px;
             }
             
             h1 {
-                font-size: 1.1rem;
+                font-size: 1rem;
             }
             
             .subtitle {
-                font-size: 0.75rem;
+                font-size: 0.65rem;
             }
             
             .song-status {
+                padding: 4px;
+                font-size: 0.75rem;
+                min-height: 24px;
+            }
+            
+            .songs-container {
+                padding: 0 4px 4px 4px;
+                gap: 3px;
+                max-height: calc(100vh - 100px);
+            }
+            
+            .current-song-info {
                 padding: 6px 8px;
-                font-size: 0.85rem;
+                font-size: 0.75rem;
             }
             
-            .songs-list-container {
-                padding: 0 8px;
-            }
-            
-            .songs-list {
-                gap: 5px;
+            .stop-btn {
+                padding: 4px 8px;
+                font-size: 0.7rem;
+                min-height: 24px;
             }
         }
 
-        /* Для экранов в альбомной ориентации */
-        @media (orientation: landscape) and (max-height: 500px) {
+        @media (max-height: 600px) {
+            .song-card {
+                min-height: 36px;
+                padding: 4px 5px;
+            }
+            
+            .song-number {
+                font-size: 0.9rem;
+                min-width: 18px;
+            }
+            
+            .song-name {
+                font-size: 0.75rem;
+            }
+            
+            .song-content {
+                margin-left: 6px;
+            }
+            
+            .song-details {
+                gap: 4px;
+            }
+            
+            .song-tempo, .song-rhythm {
+                font-size: 0.6rem;
+            }
+            
+            .songs-container {
+                max-height: calc(100vh - 90px);
+            }
+        }
+
+        /* Альбомная ориентация */
+        @media (orientation: landscape) {
             .container {
                 flex-direction: row;
-                height: 100vh;
             }
             
             header {
-                width: 180px;
-                padding: 15px;
+                width: 140px;
+                padding: 10px;
                 display: flex;
                 flex-direction: column;
                 justify-content: center;
                 text-align: left;
             }
             
-            .songs-list-container {
+            .songs-container {
                 flex: 1;
-                padding: 10px;
+                padding: 6px;
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 4px;
+                max-height: 100vh;
+                overflow-y: auto;
             }
             
             .song-status {
@@ -316,95 +363,55 @@
             
             .current-song-info {
                 position: absolute;
-                bottom: 10px;
-                left: 190px;
-                right: 10px;
-                border-radius: 10px;
+                bottom: 6px;
+                left: 150px;
+                right: 6px;
+                border-radius: 8px;
             }
             
             .song-card {
-                min-height: 45px;
-                padding: 8px 12px;
-            }
-            
-            .song-number {
-                font-size: 1.2rem;
-                min-width: 25px;
+                min-height: 42px;
             }
         }
 
-        /* Скрываем скроллбар для WebKit браузеров */
-        .songs-list-container::-webkit-scrollbar {
+        /* Для очень широких экранов в альбомной ориентации */
+        @media (orientation: landscape) and (min-width: 800px) {
+            .songs-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* Скрываем скроллбар */
+        .songs-container::-webkit-scrollbar {
             width: 0;
             height: 0;
         }
 
-        /* Для Firefox */
-        .songs-list-container {
+        .songs-container {
             scrollbar-width: none;
-        }
-
-        /* Для очень узких экранов */
-        @media (max-width: 320px) {
-            .song-card {
-                padding: 8px 10px;
-            }
-            
-            .song-left-section {
-                gap: 8px;
-            }
-            
-            .song-number {
-                font-size: 1.1rem;
-                min-width: 22px;
-            }
-            
-            .song-name {
-                font-size: 0.85rem;
-            }
-            
-            .song-details {
-                gap: 6px;
-            }
-            
-            .song-tempo, .song-rhythm {
-                font-size: 0.7rem;
-            }
-            
-            .current-song-info {
-                padding: 8px 10px;
-                font-size: 0.85rem;
-            }
-            
-            .stop-btn {
-                padding: 5px 12px;
-                font-size: 0.8rem;
-            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Метроном для песен</h1>
-            <p class="subtitle">Тапните на песню для запуска/остановки</p>
+            <h1>Метроном</h1>
+            <p class="subtitle">Тапните на песню</p>
         </header>
 
         <div class="song-status">
             <span id="status-text" class="status-stopped">Выберите песню</span>
         </div>
 
-        <div class="songs-list-container">
-            <div class="songs-list" id="songs-list">
-                <!-- Song cards will be generated here -->
-            </div>
+        <div class="songs-container" id="songs-container">
+            <!-- Song cards will be generated here -->
         </div>
 
         <div class="current-song-info" id="current-song-info" style="display: none;">
             <div class="song-info-text">
                 <span id="current-song-name">Песня 1</span> • 
                 <span class="current-tempo-display" id="current-tempo">120</span> BPM • 
-                <span id="current-rhythm">⅛ ноты</span>
+                <span id="current-rhythm">⅛</span>
             </div>
             <button class="stop-btn" id="stop-btn">Стоп</button>
         </div>
@@ -446,7 +453,7 @@
         let beatCounter = 0;
 
         // Элементы DOM
-        const songsList = document.getElementById('songs-list');
+        const songsContainer = document.getElementById('songs-container');
         const statusText = document.getElementById('status-text');
         const currentSongName = document.getElementById('current-song-name');
         const currentTempo = document.getElementById('current-tempo');
@@ -456,49 +463,42 @@
 
         // Инициализация песен
         function initSongs() {
-            songsList.innerHTML = '';
+            songsContainer.innerHTML = '';
             
             songs.forEach(song => {
                 const songCard = document.createElement('div');
                 songCard.className = 'song-card';
                 songCard.innerHTML = `
-                    <div class="song-left-section">
-                        <div class="song-number">${song.id}</div>
-                        <div class="play-indicator"></div>
-                        <div class="song-info">
-                            <div class="song-name">${song.name}</div>
-                            <div class="song-details">
-                                <div class="song-tempo">${song.tempo} BPM</div>
-                                <div class="song-rhythm">${song.rhythm === "quarter" ? "¼ ноты" : "⅛ ноты"}</div>
-                            </div>
+                    <div class="song-number">${song.id}</div>
+                    <div class="song-content">
+                        <div class="song-name">${song.name}</div>
+                        <div class="song-details">
+                            <div class="song-tempo">${song.tempo} BPM</div>
+                            <div class="song-rhythm">${song.rhythm === "quarter" ? "¼" : "⅛"}</div>
                         </div>
                     </div>
+                    <div class="play-indicator"></div>
                 `;
                 
-                // Добавляем обработчик тапа/клика
                 songCard.addEventListener('click', () => toggleSong(song));
-                
-                // Добавляем обработчик для touch-устройств
                 songCard.addEventListener('touchstart', (e) => {
                     e.preventDefault();
                     toggleSong(song);
                 }, { passive: false });
                 
-                songsList.appendChild(songCard);
+                songsContainer.appendChild(songCard);
             });
         }
 
-        // Переключение песни (запуск/остановка)
+        // Переключение песни
         function toggleSong(song) {
             if (currentSong && currentSong.id === song.id) {
-                // Клик на текущую играющую песню - останавливаем
                 if (isPlaying) {
                     stopMetronome();
                 } else {
                     startMetronome();
                 }
             } else {
-                // Клик на другую песню - переключаемся
                 if (isPlaying) {
                     stopMetronome();
                 }
@@ -508,30 +508,23 @@
 
         // Выбор песни
         function selectSong(song, startPlaying = false) {
-            // Убираем активный класс у всех песен
             document.querySelectorAll('.song-card').forEach(card => {
                 card.classList.remove('active', 'playing');
             });
             
-            // Добавляем активный класс выбранной песне
             const songCard = document.querySelectorAll('.song-card')[song.id - 1];
             songCard.classList.add('active');
             
             currentSong = song;
             tempo = song.tempo;
             
-            // Обновляем информацию о текущей песне
             currentSongName.textContent = song.name;
             currentTempo.textContent = tempo;
-            currentRhythm.textContent = song.rhythm === "quarter" ? "¼ ноты" : "⅛ ноты";
+            currentRhythm.textContent = song.rhythm === "quarter" ? "¼" : "⅛";
             
-            // Показываем панель с информацией
             currentSongInfo.style.display = 'flex';
-            
-            // Обновляем статус
             updateStatus();
             
-            // Если нужно запустить сразу
             if (startPlaying) {
                 startMetronome();
             }
@@ -540,7 +533,7 @@
         // Обновление статуса
         function updateStatus() {
             if (isPlaying) {
-                statusText.textContent = `Метроном играет: ${currentSong.name}`;
+                statusText.textContent = `Играет: ${currentSong.name}`;
                 statusText.className = "status-playing";
                 if (currentSong) {
                     const songCard = document.querySelectorAll('.song-card')[currentSong.id - 1];
@@ -571,12 +564,10 @@
             beatCounter = 0;
             updateStatus();
             
-            // Создаем AudioContext при первом запуске
             if (!audioContext) {
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
             }
             
-            // Если аудиоконтекст приостановлен (автоплей политика), возобновляем
             if (audioContext.state === 'suspended') {
                 audioContext.resume();
             }
@@ -590,7 +581,6 @@
             
             isPlaying = false;
             updateStatus();
-            
             clearInterval(timerID);
         }
 
@@ -599,23 +589,16 @@
                 scheduleNote(nextNoteTime);
                 
                 if (currentSong.rhythm === "quarter") {
-                    // Для четвертных нот
                     nextNoteTime += (60.0 / tempo);
                 } else {
-                    // Для восьмых нот
                     nextNoteTime += (60.0 / tempo) / 2;
                 }
             }
         }
 
         function scheduleNote(time) {
-            // Акцент чередуется: акцент - без акцента - акцент - без акцента
             const isAccented = (beatCounter % 2 === 0);
-            
-            // Воспроизводим звук
             playMetronomeSound(time, isAccented);
-            
-            // Увеличиваем счетчик битов
             beatCounter++;
         }
 
@@ -628,10 +611,7 @@
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
             
-            // Разная частота для акцентированного и обычного бита
             oscillator.frequency.value = accented ? 1000 : 600;
-            
-            // Разная громкость и длительность
             gainNode.gain.setValueAtTime(0, time);
             
             if (accented) {
@@ -646,19 +626,17 @@
             oscillator.stop(time + 0.2);
         }
 
-        // Инициализация при загрузке
+        // Инициализация
         document.addEventListener('DOMContentLoaded', function() {
             initSongs();
             updateStatus();
             
-            // Обработка закрытия вкладки/окна
             window.addEventListener('beforeunload', function() {
                 if (isPlaying) {
                     stopMetronome();
                 }
             });
             
-            // Обработка паузы/скрытия вкладки
             document.addEventListener('visibilitychange', function() {
                 if (document.hidden && isPlaying) {
                     stopMetronome();
