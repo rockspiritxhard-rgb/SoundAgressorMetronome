@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Метроном для песен</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #00dbde, #fc00ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #aaa;
+            margin-bottom: 30px;
+        }
+
+        .metronome-display {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .current-song {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: #00dbde;
+        }
+
+        .tempo-display {
+            font-size: 5rem;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            text-shadow: 0 0 20px rgba(0, 219, 222, 0.5);
+        }
+
+        .song-status {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.2rem;
+            min-height: 30px;
+        }
+
+        .status-playing {
+            color: #00b09b;
+            font-weight: bold;
+        }
+
+        .status-stopped {
+            color: #ff416c;
+        }
+
+        .songs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .song-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            text-align: center;
+            position: relative;
+        }
+
+        .song-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .song-card.active {
+            background: rgba(0, 219, 222, 0.2);
+            border-color: #00dbde;
+            box-shadow: 0 0 20px rgba(0, 219, 222, 0.3);
+        }
+
+        .song-card.playing {
+            background: rgba(0, 176, 155, 0.3);
+            border-color: #00b09b;
+            box-shadow: 0 0 25px rgba(0, 176, 155, 0.5);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 25px rgba(0, 176, 155, 0.5); }
+            50% { box-shadow: 0 0 35px rgba(0, 176, 155, 0.8); }
+            100% { box-shadow: 0 0 25px rgba(0, 176, 155, 0.5); }
+        }
+
+        .song-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00dbde;
+            margin-bottom: 5px;
+        }
+
+        .song-card.playing .song-number {
+            color: #00b09b;
+        }
+
+        .song-tempo {
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+
+        .play-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ff416c;
+            opacity: 0;
+        }
+
+        .song-card.playing .play-indicator {
+            background: #00b09b;
+            opacity: 1;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .tempo-input {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .tempo-input label {
+            font-size: 1.1rem;
+        }
+
+        .tempo-input input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #00dbde;
+            border-radius: 10px;
+            color: white;
+            padding: 10px 15px;
+            font-size: 1.2rem;
+            width: 100px;
+            text-align: center;
+        }
+
+        .beat-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 25px 0;
+        }
+
+        .beat-dot {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            transition: all 0.1s ease;
+        }
+
+        .beat-dot.active {
+            transform: scale(1.2);
+            box-shadow: 0 0 15px rgba(0, 219, 222, 0.7);
+        }
+
+        .beat-dot.accent {
+            background: #ff416c;
+        }
+
+        .beat-dot.normal {
+            background: #00dbde;
+        }
+
+        .rhythm-info {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 1.1rem;
+            color: #00dbde;
+            font-weight: bold;
+        }
+
+        .instructions {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+            font-size: 0.9rem;
+            color: #aaa;
+            line-height: 1.5;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .songs-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+            
+            .tempo-display {
+                font-size: 3.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Метроном для песен</h1>
+            <p class="subtitle">Кликните на песню для запуска метронома, повторный клик - остановка</p>
+        </header>
+
+        <div class="metronome-display">
+            <div class="current-song">Песня: <span id="current-song-name">Не выбрана</span></div>
+            
+            <div class="song-status">
+                <span id="status-text" class="status-stopped">Метроном остановлен</span>
+            </div>
+            
+            <div class="tempo-display">
+                <span id="current-tempo">120</span> BPM
+            </div>
+
+            <div class="tempo-input">
+                <label for="tempo-control">Темп (BPM):</label>
+                <input type="number" id="tempo-control" min="40" max="300" value="120">
+            </div>
+
+            <div class="beat-indicator" id="beat-indicator">
+                <!-- Beat dots will be generated here -->
+            </div>
+            
+            <div class="rhythm-info" id="rhythm-info">
+                <!-- Rhythm info will be shown here -->
+            </div>
+        </div>
+
+        <div class="songs-grid" id="songs-grid">
+            <!-- Song cards will be generated here -->
+        </div>
+
+        <div class="instructions">
+            <p><strong>Инструкция:</strong></p>
+            <p>• Кликните на песню для запуска метронома</p>
+            <p>• Повторный клик на ту же песню - остановка метронома</p>
+            <p>• Клик на другую песню - переключение на неё и запуск её метронома</p>
+            <p>• При необходимости отрегулируйте темп</p>
+            <p>• Для песен 1-18: метроном звучит восьмыми нотами (акцент на каждой первой восьмой такта)</p>
+            <p>• Для песни 19: метроном звучит четвертями (акцент на первой четверти)</p>
+        </div>
+
+        <footer>
+            <p>Метроном для музыкальных репетиций | Все темпы можно менять</p>
+        </footer>
+    </div>
+
+    <script>
+        // Данные песен (можно изменить темпы)
+        const songs = [
+            { id: 1, name: "Песня 1", tempo: 120 },
+            { id: 2, name: "Песня 2", tempo: 130 },
+            { id: 3, name: "Песня 3", tempo: 140 },
+            { id: 4, name: "Песня 4", tempo: 110 },
+            { id: 5, name: "Песня 5", tempo: 100 },
+            { id: 6, name: "Песня 6", tempo: 150 },
+            { id: 7, name: "Песня 7", tempo: 90 },
+            { id: 8, name: "Песня 8", tempo: 160 },
+            { id: 9, name: "Песня 9", tempo: 80 },
+            { id: 10, name: "Песня 10", tempo: 170 },
+            { id: 11, name: "Песня 11", tempo: 180 },
+            { id: 12, name: "Песня 12", tempo: 95 },
+            { id: 13, name: "Песня 13", tempo: 125 },
+            { id: 14, name: "Песня 14", tempo: 135 },
+            { id: 15, name: "Песня 15", tempo: 145 },
+            { id: 16, name: "Песня 16", tempo: 155 },
+            { id: 17, name: "Песня 17", tempo: 165 },
+            { id: 18, name: "Песня 18", tempo: 175 },
+            { id: 19, name: "Песня 19", tempo: 70 }
+        ];
+
+        // Глобальные переменные
+        let currentSong = null;
+        let isPlaying = false;
+        let audioContext = null;
+        let nextNoteTime = 0.0;
+        let timerID = null;
+        let tempo = 120;
+        let lookahead = 25.0; // ms
+        let scheduleAheadTime = 0.1; // sec
+        let beatCounter = 0; // Счетчик битов для правильного определения акцентов
+
+        // Элементы DOM
+        const songsGrid = document.getElementById('songs-grid');
+        const currentSongName = document.getElementById('current-song-name');
+        const currentTempo = document.getElementById('current-tempo');
+        const tempoControl = document.getElementById('tempo-control');
+        const statusText = document.getElementById('status-text');
+        const beatIndicator = document.getElementById('beat-indicator');
+        const rhythmInfo = document.getElementById('rhythm-info');
+
+        // Инициализация песен
+        function initSongs() {
+            songsGrid.innerHTML = '';
+            
+            songs.forEach(song => {
+                const songCard = document.createElement('div');
+                songCard.className = 'song-card';
+                songCard.innerHTML = `
+                    <div class="play-indicator"></div>
+                    <div class="song-number">${song.id}</div>
+                    <div class="song-name">${song.name}</div>
+                    <div class="song-tempo">${song.tempo} BPM</div>
+                `;
+                
+                songCard.addEventListener('click', () => toggleSong(song));
+                
+                songsGrid.appendChild(songCard);
+            });
+            
+            // Выбираем первую песню по умолчанию
+            selectSong(songs[0], false);
+        }
+
+        // Переключение песни (запуск/остановка)
+        function toggleSong(song) {
+            if (currentSong && currentSong.id === song.id) {
+                // Клик на текущую играющую песню - останавливаем или запускаем
+                if (isPlaying) {
+                    stopMetronome();
+                } else {
+                    startMetronome();
+                }
+            } else {
+                // Клик на другую песню - останавливаем текущую и переключаемся
+                if (isPlaying) {
+                    stopMetronome();
+                }
+                selectSong(song, true);
+            }
+        }
+
+        // Выбор песни
+        function selectSong(song, startPlaying = false) {
+            // Убираем активный класс у всех песен
+            document.querySelectorAll('.song-card').forEach(card => {
+                card.classList.remove('active', 'playing');
+            });
+            
+            // Добавляем активный класс выбранной песне
+            const songCard = document.querySelectorAll('.song-card')[song.id - 1];
+            songCard.classList.add('active');
+            
+            currentSong = song;
+            currentSongName.textContent = song.name;
+            tempo = song.tempo;
+            currentTempo.textContent = tempo;
+            tempoControl.value = tempo;
+            
+            // Обновляем индикатор битов и информацию о ритме
+            updateBeatIndicator();
+            updateRhythmInfo();
+            
+            // Если нужно запустить сразу
+            if (startPlaying) {
+                startMetronome();
+            }
+        }
+
+        // Обновление индикатора битов
+        function updateBeatIndicator() {
+            beatIndicator.innerHTML = '';
+            
+            // Показываем 4 восьмые ноты для наглядности
+            const dotsCount = 4;
+            
+            for (let i = 0; i < dotsCount; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'beat-dot';
+                dot.dataset.index = i;
+                beatIndicator.appendChild(dot);
+            }
+            
+            updateDotColors();
+        }
+
+        // Обновление цветов точек в зависимости от типа бита
+        function updateDotColors() {
+            const dots = document.querySelectorAll('.beat-dot');
+            
+            dots.forEach((dot, index) => {
+                const dotIndex = parseInt(dot.dataset.index);
+                
+                if (currentSong.id === 19) {
+                    // Для песни 19: только две четверти - акцент на первой
+                    if (dotIndex < 2) {
+                        dot.classList.toggle('accent', dotIndex === 0);
+                        dot.classList.toggle('normal', dotIndex === 1);
+                    } else {
+                        dot.style.display = 'none';
+                    }
+                } else {
+                    // Для песен 1-18: чередование акцентов для восьмых нот
+                    dot.style.display = 'block';
+                    // Акцент на каждой первой восьмой такта (четные индексы: 0, 2, 4, 6...)
+                    dot.classList.toggle('accent', dotIndex % 2 === 0);
+                    dot.classList.toggle('normal', dotIndex % 2 === 1);
+                }
+            });
+        }
+
+        // Обновление информации о ритме
+        function updateRhythmInfo() {
+            if (currentSong.id === 19) {
+                rhythmInfo.textContent = "Ритм: Четвертные ноты (акцент на первой)";
+            } else {
+                rhythmInfo.textContent = "Ритм: Восьмые ноты (акцент на каждой первой восьмой)";
+            }
+        }
+
+        // Обновление статуса
+        function updateStatus() {
+            if (isPlaying) {
+                statusText.textContent = "Метроном играет";
+                statusText.className = "status-playing";
+                if (currentSong) {
+                    const songCard = document.querySelectorAll('.song-card')[currentSong.id - 1];
+                    songCard.classList.add('playing');
+                }
+            } else {
+                statusText.textContent = "Метроном остановлен";
+                statusText.className = "status-stopped";
+                document.querySelectorAll('.song-card').forEach(card => {
+                    card.classList.remove('playing');
+                });
+            }
+        }
+
+        // Изменение темпа
+        tempoControl.addEventListener('input', function() {
+            tempo = parseInt(this.value);
+            currentTempo.textContent = tempo;
+            
+            if (currentSong) {
+                currentSong.tempo = tempo;
+            }
+        });
+
+        // Функции метронома
+        function startMetronome() {
+            if (isPlaying) return;
+            
+            isPlaying = true;
+            beatCounter = 0; // Сбрасываем счетчик битов
+            updateStatus();
+            
+            // Создаем AudioContext при первом запуске
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            
+            // Если аудиоконтекст приостановлен (автоплей политика), возобновляем
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            
+            nextNoteTime = audioContext.currentTime + 0.05;
+            timerID = setInterval(scheduler, lookahead);
+        }
+
+        function stopMetronome() {
+            if (!isPlaying) return;
+            
+            isPlaying = false;
+            updateStatus();
+            
+            clearInterval(timerID);
+            
+            // Сбрасываем индикаторы битов
+            document.querySelectorAll('.beat-dot').forEach(dot => {
+                dot.classList.remove('active');
+            });
+        }
+
+        function scheduler() {
+            while (nextNoteTime < audioContext.currentTime + scheduleAheadTime) {
+                scheduleNote(nextNoteTime);
+                
+                if (currentSong.id === 19) {
+                    // Для песни 19: четвертные ноты (интервал = 60 / tempo)
+                    nextNoteTime += (60.0 / tempo);
+                } else {
+                    // Для песен 1-18: восьмые ноты (интервал = 60 / tempo / 2)
+                    nextNoteTime += (60.0 / tempo) / 2;
+                }
+            }
+        }
+
+        function scheduleNote(time) {
+            // Определяем, акцентированный ли это бит
+            let isAccented;
+            
+            if (currentSong.id === 19) {
+                // Для песни 19: акцент только на первой четверти каждого такта
+                isAccented = (beatCounter % 2 === 0); // Акцент на каждой первой четверти (четные beatCounter)
+            } else {
+                // Для песен 1-18: акцент на каждой первой восьмой такта
+                isAccented = (beatCounter % 2 === 0); // Акцент на четных beatCounter (0, 2, 4, 6...)
+            }
+            
+            // Воспроизводим звук
+            playMetronomeSound(time, isAccented);
+            
+            // Обновляем визуальный индикатор
+            updateVisualBeatIndicator(beatCounter);
+            
+            // Увеличиваем счетчик битов
+            beatCounter++;
+        }
+
+        function playMetronomeSound(time, accented) {
+            if (!audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            // Разная частота для акцентированного и обычного бита
+            oscillator.frequency.value = accented ? 1000 : 600;
+            
+            // Разная громкость и длительность для акцентированного и обычного бита
+            gainNode.gain.setValueAtTime(0, time);
+            
+            if (accented) {
+                // Акцентированный бит - громче и длиннее
+                gainNode.gain.linearRampToValueAtTime(0.6, time + 0.01);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, time + 0.15);
+            } else {
+                // Обычный бит - тише и короче
+                gainNode.gain.linearRampToValueAtTime(0.3, time + 0.01);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, time + 0.08);
+            }
+            
+            oscillator.start(time);
+            oscillator.stop(time + 0.2);
+        }
+
+        function updateVisualBeatIndicator(currentBeatIndex) {
+            // Сбрасываем все индикаторы
+            document.querySelectorAll('.beat-dot').forEach(dot => {
+                dot.classList.remove('active');
+            });
+            
+            // Определяем, какую точку активировать
+            let dotIndex;
+            
+            if (currentSong.id === 19) {
+                // Для песни 19: показываем только 2 точки для четвертей
+                dotIndex = currentBeatIndex % 2;
+            } else {
+                // Для песен 1-18: показываем 4 точки для восьмых
+                dotIndex = currentBeatIndex % 4;
+            }
+            
+            // Активируем текущий бит
+            const dots = document.querySelectorAll('.beat-dot');
+            if (dots[dotIndex]) {
+                dots[dotIndex].classList.add('active');
+            }
+            
+            // Через короткое время убираем активность
+            setTimeout(() => {
+                if (dots[dotIndex]) {
+                    dots[dotIndex].classList.remove('active');
+                }
+            }, 100);
+        }
+
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            initSongs();
+            updateBeatIndicator();
+            updateStatus();
+            
+            // Обработка закрытия вкладки/окна
+            window.addEventListener('beforeunload', function() {
+                if (isPlaying) {
+                    stopMetronome();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
