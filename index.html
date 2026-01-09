@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Метроном для SoundAgressor</title>
+    <title>Метроном для песен</title>
     <style>
         * {
             margin: 0;
@@ -17,25 +17,28 @@
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             color: #fff;
             min-height: 100vh;
-            padding: 10px;
+            padding: 0;
             overflow-x: hidden;
         }
 
         .container {
             max-width: 100%;
             margin: 0 auto;
-            padding: 5px;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         header {
             text-align: center;
-            margin-bottom: 15px;
-            padding: 10px;
+            padding: 10px 5px 5px 5px;
+            flex-shrink: 0;
         }
 
         h1 {
-            font-size: 1.5rem;
-            margin-bottom: 5px;
+            font-size: 1.3rem;
+            margin-bottom: 3px;
             background: linear-gradient(90deg, #00dbde, #fc00ff);
             -webkit-background-clip: text;
             background-clip: text;
@@ -43,17 +46,17 @@
         }
 
         .subtitle {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: #aaa;
-            margin-bottom: 15px;
+            margin-bottom: 5px;
         }
 
         .song-status {
             text-align: center;
-            margin: 10px 0;
-            font-size: 1rem;
-            min-height: 20px;
             padding: 5px;
+            font-size: 0.9rem;
+            min-height: 20px;
+            flex-shrink: 0;
         }
 
         .status-playing {
@@ -65,32 +68,59 @@
             color: #ff416c;
         }
 
+        .songs-grid-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 5px;
+            -webkit-overflow-scrolling: touch;
+        }
+
         .songs-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 10px;
-            padding: 5px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+        }
+
+        /* Адаптивная сетка для разных размеров */
+        @media (min-width: 400px) {
+            .songs-grid {
+                grid-template-columns: repeat(5, 1fr);
+                gap: 6px;
+            }
+        }
+
+        @media (min-width: 500px) {
+            .songs-grid {
+                grid-template-columns: repeat(6, 1fr);
+                gap: 7px;
+            }
+        }
+
+        @media (min-width: 600px) {
+            .songs-grid {
+                grid-template-columns: repeat(7, 1fr);
+                gap: 8px;
+            }
         }
 
         @media (min-width: 768px) {
             .songs-grid {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 15px;
+                grid-template-columns: repeat(8, 1fr);
+                gap: 10px;
             }
         }
 
         @media (min-width: 1024px) {
             .songs-grid {
-                grid-template-columns: repeat(5, 1fr);
-                gap: 20px;
+                grid-template-columns: repeat(10, 1fr);
+                gap: 12px;
             }
         }
 
         .song-card {
             background: rgba(255, 255, 255, 0.08);
-            border-radius: 12px;
-            padding: 15px 10px;
+            border-radius: 8px;
+            padding: 8px 5px;
             cursor: pointer;
             transition: all 0.2s ease;
             border: 2px solid transparent;
@@ -99,17 +129,15 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            min-height: 100px;
+            justify-content: space-between;
+            min-height: 70px;
             user-select: none;
             touch-action: manipulation;
+            aspect-ratio: 3/4;
         }
 
         .song-card:active {
             transform: scale(0.98);
-        }
-
-        .song-card:hover {
             background: rgba(255, 255, 255, 0.12);
         }
 
@@ -125,17 +153,17 @@
         }
 
         @keyframes pulse {
-            0% { box-shadow: 0 0 10px rgba(0, 176, 155, 0.3); }
-            50% { box-shadow: 0 0 20px rgba(0, 176, 155, 0.6); }
-            100% { box-shadow: 0 0 10px rgba(0, 176, 155, 0.3); }
+            0% { box-shadow: 0 0 5px rgba(0, 176, 155, 0.3); }
+            50% { box-shadow: 0 0 10px rgba(0, 176, 155, 0.6); }
+            100% { box-shadow: 0 0 5px rgba(0, 176, 155, 0.3); }
         }
 
         .song-number {
-            font-size: 1.8rem;
+            font-size: 1.4rem;
             font-weight: bold;
             color: #00dbde;
-            margin-bottom: 5px;
             line-height: 1;
+            margin-bottom: 2px;
         }
 
         .song-card.playing .song-number {
@@ -143,47 +171,48 @@
         }
 
         .song-name {
-            font-size: 0.9rem;
+            font-size: 0.7rem;
             color: #fff;
-            margin-bottom: 5px;
             font-weight: 500;
-            line-height: 1.2;
+            line-height: 1;
+            margin-bottom: 3px;
             max-width: 100%;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            padding: 0 5px;
+            padding: 0 2px;
         }
 
         .song-details {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 2px;
+            gap: 1px;
             width: 100%;
         }
 
         .song-tempo {
-            font-size: 0.8rem;
+            font-size: 0.65rem;
             color: #aaa;
+            line-height: 1;
         }
 
         .song-rhythm {
-            font-size: 0.8rem;
+            font-size: 0.65rem;
             color: #ffcc00;
             font-weight: bold;
             background: rgba(255, 204, 0, 0.1);
-            padding: 2px 6px;
-            border-radius: 10px;
-            margin-top: 3px;
+            padding: 1px 4px;
+            border-radius: 6px;
+            line-height: 1;
         }
 
         .play-indicator {
             position: absolute;
-            top: 8px;
-            right: 8px;
-            width: 8px;
-            height: 8px;
+            top: 5px;
+            right: 5px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
             background: #ff416c;
             opacity: 0;
@@ -202,151 +231,141 @@
 
         .current-song-info {
             position: fixed;
-            bottom: 10px;
-            left: 10px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            border-radius: 10px;
-            padding: 10px;
-            font-size: 0.9rem;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 8px 10px;
+            font-size: 0.85rem;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
             z-index: 100;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-shrink: 0;
         }
 
         .song-info-text {
             flex: 1;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
         }
 
         .current-tempo-display {
             font-weight: bold;
             color: #00dbde;
-            font-size: 1.1rem;
         }
 
         .stop-btn {
             background: linear-gradient(90deg, #ff416c, #ff4b2b);
             color: white;
             border: none;
-            border-radius: 20px;
-            padding: 8px 15px;
-            font-size: 0.9rem;
+            border-radius: 15px;
+            padding: 6px 12px;
+            font-size: 0.8rem;
             cursor: pointer;
             font-weight: bold;
             white-space: nowrap;
-            margin-left: 10px;
+            margin-left: 8px;
+            flex-shrink: 0;
         }
 
         .stop-btn:active {
             transform: scale(0.95);
         }
 
-        /* Скрываем на мобильных в портретной ориентации */
-        @media (max-width: 768px) and (orientation: portrait) {
-            .current-song-info {
-                bottom: 5px;
-                left: 5px;
-                right: 5px;
-                padding: 8px;
-                font-size: 0.8rem;
-            }
-            
-            .stop-btn {
-                padding: 6px 12px;
-                font-size: 0.8rem;
-            }
-            
-            .songs-grid {
-                margin-bottom: 70px; /* Отступ для фиксированной панели */
-            }
-            
+        /* Для очень маленьких экранов (iPhone SE и подобные) */
+        @media (max-height: 600px) {
             .song-card {
-                min-height: 110px;
-                padding: 12px 8px;
-            }
-            
-            .song-name {
-                font-size: 0.85rem;
+                min-height: 65px;
+                padding: 6px 4px;
             }
             
             .song-number {
-                font-size: 1.7rem;
+                font-size: 1.2rem;
+            }
+            
+            .song-name {
+                font-size: 0.65rem;
+            }
+            
+            .song-tempo, .song-rhythm {
+                font-size: 0.6rem;
+            }
+            
+            header {
+                padding: 8px 5px 3px 5px;
+            }
+            
+            h1 {
+                font-size: 1.1rem;
+            }
+            
+            .subtitle {
+                font-size: 0.75rem;
             }
         }
 
-        /* Для горизонтальной ориентации на мобильных */
-        @media (max-width: 768px) and (orientation: landscape) {
+        /* Для экранов в портретной ориентации */
+        @media (orientation: portrait) {
             .songs-grid {
                 grid-template-columns: repeat(4, 1fr);
-                gap: 8px;
             }
             
             .song-card {
-                padding: 10px 5px;
-                min-height: 90px;
-            }
-            
-            .song-number {
-                font-size: 1.5rem;
-            }
-            
-            .song-name {
-                font-size: 0.8rem;
-            }
-            
-            .current-song-info {
-                bottom: 5px;
-                padding: 6px;
+                aspect-ratio: 3/4;
             }
         }
 
-        /* Для очень маленьких экранов */
-        @media (max-width: 360px) {
-            .songs-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 8px;
-            }
-            
-            .song-card {
-                min-height: 100px;
-                padding: 12px 8px;
-            }
-            
-            .song-number {
-                font-size: 1.6rem;
-            }
-            
-            .song-name {
-                font-size: 0.85rem;
-            }
-        }
-
-        /* Для планшетов и больших экранов */
-        @media (min-width: 769px) {
+        /* Для экранов в альбомной ориентации */
+        @media (orientation: landscape) and (max-height: 500px) {
             .container {
-                max-width: 900px;
+                flex-direction: row;
+                height: 100vh;
+            }
+            
+            header {
+                width: 200px;
+                padding: 10px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+            
+            .songs-grid-container {
+                flex: 1;
+                padding: 10px;
             }
             
             .songs-grid {
-                margin-bottom: 0;
+                grid-template-columns: repeat(6, 1fr);
+                gap: 8px;
+            }
+            
+            .song-status {
+                display: none;
             }
             
             .current-song-info {
-                position: static;
-                margin-top: 20px;
-                margin-bottom: 10px;
+                position: absolute;
+                bottom: 10px;
+                left: 210px;
+                right: 10px;
+                border-radius: 10px;
             }
-            
-            .song-card {
-                min-height: 120px;
-            }
-            
-            .song-name {
-                font-size: 1rem;
-            }
+        }
+
+        /* Скрываем скроллбар для WebKit браузеров */
+        .songs-grid-container::-webkit-scrollbar {
+            width: 0;
+            height: 0;
+        }
+
+        /* Для Firefox */
+        .songs-grid-container {
+            scrollbar-width: none;
         }
     </style>
 </head>
@@ -354,15 +373,17 @@
     <div class="container">
         <header>
             <h1>Метроном для SoundAgressor</h1>
-            <p class="subtitle">Клик на песне для запуска/остановки метронома</p>
+            <p class="subtitle">Нажать на песню для запуска/остановки</p>
         </header>
 
         <div class="song-status">
             <span id="status-text" class="status-stopped">Выберите песню</span>
         </div>
 
-        <div class="songs-grid" id="songs-grid">
-            <!-- Song cards will be generated here -->
+        <div class="songs-grid-container">
+            <div class="songs-grid" id="songs-grid">
+                <!-- Song cards will be generated here -->
+            </div>
         </div>
 
         <div class="current-song-info" id="current-song-info" style="display: none;">
@@ -624,6 +645,14 @@
                 if (document.hidden && isPlaying) {
                     stopMetronome();
                 }
+            });
+            
+            // Обработка изменения ориентации
+            window.addEventListener('orientationchange', function() {
+                // Даем время на перерисовку
+                setTimeout(() => {
+                    window.scrollTo(0, 0);
+                }, 100);
             });
         });
     </script>
