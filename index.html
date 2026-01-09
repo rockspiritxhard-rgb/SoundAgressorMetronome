@@ -1,81 +1,59 @@
-html
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Метроном для песен</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Метроном для SoundAgressor</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             color: #fff;
             min-height: 100vh;
-            padding: 20px;
+            padding: 10px;
+            overflow-x: hidden;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 100%;
             margin: 0 auto;
+            padding: 5px;
         }
 
         header {
             text-align: center;
-            margin-bottom: 40px;
-            padding: 20px;
+            margin-bottom: 15px;
+            padding: 10px;
         }
 
         h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
+            font-size: 1.5rem;
+            margin-bottom: 5px;
             background: linear-gradient(90deg, #00dbde, #fc00ff);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
         .subtitle {
-            font-size: 1.1rem;
+            font-size: 0.9rem;
             color: #aaa;
-            margin-bottom: 30px;
-        }
-
-        .metronome-display {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .current-song {
-            font-size: 1.8rem;
             margin-bottom: 15px;
-            color: #00dbde;
-        }
-
-        .tempo-display {
-            font-size: 5rem;
-            font-weight: bold;
-            text-align: center;
-            margin: 20px 0;
-            text-shadow: 0 0 20px rgba(0, 219, 222, 0.5);
         }
 
         .song-status {
             text-align: center;
-            margin: 20px 0;
-            font-size: 1.2rem;
-            min-height: 30px;
+            margin: 10px 0;
+            font-size: 1rem;
+            min-height: 20px;
+            padding: 5px;
         }
 
         .status-playing {
@@ -89,68 +67,123 @@ html
 
         .songs-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 15px;
-            margin-top: 30px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+            padding: 5px;
+        }
+
+        @media (min-width: 768px) {
+            .songs-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 15px;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .songs-grid {
+                grid-template-columns: repeat(5, 1fr);
+                gap: 20px;
+            }
         }
 
         .song-card {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            padding: 20px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 15px 10px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             border: 2px solid transparent;
             text-align: center;
             position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100px;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        .song-card:active {
+            transform: scale(0.98);
         }
 
         .song-card:hover {
-            transform: translateY(-5px);
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.12);
         }
 
         .song-card.active {
-            background: rgba(0, 219, 222, 0.2);
+            background: rgba(0, 219, 222, 0.15);
             border-color: #00dbde;
-            box-shadow: 0 0 20px rgba(0, 219, 222, 0.3);
         }
 
         .song-card.playing {
-            background: rgba(0, 176, 155, 0.3);
+            background: rgba(0, 176, 155, 0.25);
             border-color: #00b09b;
-            box-shadow: 0 0 25px rgba(0, 176, 155, 0.5);
             animation: pulse 2s infinite;
         }
 
         @keyframes pulse {
-            0% { box-shadow: 0 0 25px rgba(0, 176, 155, 0.5); }
-            50% { box-shadow: 0 0 35px rgba(0, 176, 155, 0.8); }
-            100% { box-shadow: 0 0 25px rgba(0, 176, 155, 0.5); }
+            0% { box-shadow: 0 0 10px rgba(0, 176, 155, 0.3); }
+            50% { box-shadow: 0 0 20px rgba(0, 176, 155, 0.6); }
+            100% { box-shadow: 0 0 10px rgba(0, 176, 155, 0.3); }
         }
 
         .song-number {
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             font-weight: bold;
             color: #00dbde;
             margin-bottom: 5px;
+            line-height: 1;
         }
 
         .song-card.playing .song-number {
             color: #00b09b;
         }
 
-        .song-tempo {
+        .song-name {
             font-size: 0.9rem;
+            color: #fff;
+            margin-bottom: 5px;
+            font-weight: 500;
+            line-height: 1.2;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding: 0 5px;
+        }
+
+        .song-details {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            width: 100%;
+        }
+
+        .song-tempo {
+            font-size: 0.8rem;
             color: #aaa;
+        }
+
+        .song-rhythm {
+            font-size: 0.8rem;
+            color: #ffcc00;
+            font-weight: bold;
+            background: rgba(255, 204, 0, 0.1);
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-top: 3px;
         }
 
         .play-indicator {
             position: absolute;
-            top: 10px;
-            right: 10px;
-            width: 10px;
-            height: 10px;
+            top: 8px;
+            right: 8px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
             background: #ff416c;
             opacity: 0;
@@ -167,91 +200,152 @@ html
             50% { opacity: 0.5; }
         }
 
-        .tempo-input {
+        .current-song-info {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 0.9rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 100;
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 20px;
         }
 
-        .tempo-input label {
-            font-size: 1.1rem;
+        .song-info-text {
+            flex: 1;
         }
 
-        .tempo-input input {
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid #00dbde;
-            border-radius: 10px;
-            color: white;
-            padding: 10px 15px;
-            font-size: 1.2rem;
-            width: 100px;
-            text-align: center;
-        }
-
-        .beat-indicator {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin: 25px 0;
-        }
-
-        .beat-dot {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            transition: all 0.1s ease;
-        }
-
-        .beat-dot.active {
-            transform: scale(1.2);
-            box-shadow: 0 0 15px rgba(0, 219, 222, 0.7);
-        }
-
-        .beat-dot.accent {
-            background: #ff416c;
-        }
-
-        .beat-dot.normal {
-            background: #00dbde;
-        }
-
-        .rhythm-info {
-            text-align: center;
-            margin-top: 15px;
-            font-size: 1.1rem;
-            color: #00dbde;
+        .current-tempo-display {
             font-weight: bold;
+            color: #00dbde;
+            font-size: 1.1rem;
         }
 
-        .instructions {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 30px;
+        .stop-btn {
+            background: linear-gradient(90deg, #ff416c, #ff4b2b);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 15px;
             font-size: 0.9rem;
-            color: #aaa;
-            line-height: 1.5;
+            cursor: pointer;
+            font-weight: bold;
+            white-space: nowrap;
+            margin-left: 10px;
         }
 
-        footer {
-            text-align: center;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            color: #666;
-            font-size: 0.9rem;
+        .stop-btn:active {
+            transform: scale(0.95);
         }
 
-        @media (max-width: 768px) {
-            .songs-grid {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        /* Скрываем на мобильных в портретной ориентации */
+        @media (max-width: 768px) and (orientation: portrait) {
+            .current-song-info {
+                bottom: 5px;
+                left: 5px;
+                right: 5px;
+                padding: 8px;
+                font-size: 0.8rem;
             }
             
-            .tempo-display {
-                font-size: 3.5rem;
+            .stop-btn {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
+            
+            .songs-grid {
+                margin-bottom: 70px; /* Отступ для фиксированной панели */
+            }
+            
+            .song-card {
+                min-height: 110px;
+                padding: 12px 8px;
+            }
+            
+            .song-name {
+                font-size: 0.85rem;
+            }
+            
+            .song-number {
+                font-size: 1.7rem;
+            }
+        }
+
+        /* Для горизонтальной ориентации на мобильных */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .songs-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 8px;
+            }
+            
+            .song-card {
+                padding: 10px 5px;
+                min-height: 90px;
+            }
+            
+            .song-number {
+                font-size: 1.5rem;
+            }
+            
+            .song-name {
+                font-size: 0.8rem;
+            }
+            
+            .current-song-info {
+                bottom: 5px;
+                padding: 6px;
+            }
+        }
+
+        /* Для очень маленьких экранов */
+        @media (max-width: 360px) {
+            .songs-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+            
+            .song-card {
+                min-height: 100px;
+                padding: 12px 8px;
+            }
+            
+            .song-number {
+                font-size: 1.6rem;
+            }
+            
+            .song-name {
+                font-size: 0.85rem;
+            }
+        }
+
+        /* Для планшетов и больших экранов */
+        @media (min-width: 769px) {
+            .container {
+                max-width: 900px;
+            }
+            
+            .songs-grid {
+                margin-bottom: 0;
+            }
+            
+            .current-song-info {
+                position: static;
+                margin-top: 20px;
+                margin-bottom: 10px;
+            }
+            
+            .song-card {
+                min-height: 120px;
+            }
+            
+            .song-name {
+                font-size: 1rem;
             }
         }
     </style>
@@ -259,53 +353,26 @@ html
 <body>
     <div class="container">
         <header>
-            <h1>Метроном для песен</h1>
-            <p class="subtitle">Кликните на песню для запуска метронома, повторный клик - остановка</p>
+            <h1>Метроном для SoundAgressor</h1>
+            <p class="subtitle">Клик на песне для запуска/остановки метронома</p>
         </header>
 
-        <div class="metronome-display">
-            <div class="current-song">Песня: <span id="current-song-name">Не выбрана</span></div>
-            
-            <div class="song-status">
-                <span id="status-text" class="status-stopped">Метроном остановлен</span>
-            </div>
-            
-            <div class="tempo-display">
-                <span id="current-tempo">120</span> BPM
-            </div>
-
-            <div class="tempo-input">
-                <label for="tempo-control">Темп (BPM):</label>
-                <input type="number" id="tempo-control" min="40" max="300" value="120">
-            </div>
-
-            <div class="beat-indicator" id="beat-indicator">
-                <!-- Beat dots will be generated here -->
-            </div>
-            
-            <div class="rhythm-info" id="rhythm-info">
-                <!-- Rhythm info will be shown here -->
-            </div>
+        <div class="song-status">
+            <span id="status-text" class="status-stopped">Выберите песню</span>
         </div>
 
         <div class="songs-grid" id="songs-grid">
             <!-- Song cards will be generated here -->
         </div>
 
-        <div class="instructions">
-            <p><strong>Инструкция:</strong></p>
-            <p>• Кликните на песню для запуска метронома</p>
-            <p>• Повторный клик на ту же песню - остановка метронома</p>
-            <p>• Клик на другую песню - переключение на неё и запуск её метронома</p>
-            <p>• При необходимости отрегулируйте темп</p>
-            <p>• Для песен 1-2, 4-18, 19: метроном звучит восьмыми нотами (акцент на каждой первой восьмой)</p>
-            <p>• Для песни 3: метроном звучит четвертями (акцент на каждой первой четверти)</p>
-            <p>• Во всех песнях акцент чередуется: акцент - без акцента - акцент - без акцента</p>
+        <div class="current-song-info" id="current-song-info" style="display: none;">
+            <div class="song-info-text">
+                <span id="current-song-name">Песня 1</span> • 
+                <span class="current-tempo-display" id="current-tempo">120</span> BPM • 
+                <span id="current-rhythm">⅛ ноты</span>
+            </div>
+            <button class="stop-btn" id="stop-btn">Стоп</button>
         </div>
-
-        <footer>
-            <p>Метроном для музыкальных репетиций | Все темпы можно менять</p>
-        </footer>
     </div>
 
     <script>
@@ -339,18 +406,18 @@ html
         let nextNoteTime = 0.0;
         let timerID = null;
         let tempo = 120;
-        let lookahead = 25.0; // ms
-        let scheduleAheadTime = 0.1; // sec
-        let beatCounter = 0; // Счетчик битов для правильного определения акцентов
+        let lookahead = 25.0;
+        let scheduleAheadTime = 0.1;
+        let beatCounter = 0;
 
         // Элементы DOM
         const songsGrid = document.getElementById('songs-grid');
+        const statusText = document.getElementById('status-text');
         const currentSongName = document.getElementById('current-song-name');
         const currentTempo = document.getElementById('current-tempo');
-        const tempoControl = document.getElementById('tempo-control');
-        const statusText = document.getElementById('status-text');
-        const beatIndicator = document.getElementById('beat-indicator');
-        const rhythmInfo = document.getElementById('rhythm-info');
+        const currentRhythm = document.getElementById('current-rhythm');
+        const currentSongInfo = document.getElementById('current-song-info');
+        const stopBtn = document.getElementById('stop-btn');
 
         // Инициализация песен
         function initSongs() {
@@ -363,30 +430,36 @@ html
                     <div class="play-indicator"></div>
                     <div class="song-number">${song.id}</div>
                     <div class="song-name">${song.name}</div>
-                    <div class="song-tempo">${song.tempo} BPM</div>
-                    <div class="song-rhythm">${song.rhythm === "quarter" ? "¼" : "⅛"}</div>
+                    <div class="song-details">
+                        <div class="song-tempo">${song.tempo} BPM</div>
+                        <div class="song-rhythm">${song.rhythm === "quarter" ? "¼" : "⅛"}</div>
+                    </div>
                 `;
                 
+                // Добавляем обработчик тапа/клика
                 songCard.addEventListener('click', () => toggleSong(song));
+                
+                // Добавляем обработчик для touch-устройств
+                songCard.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    toggleSong(song);
+                }, { passive: false });
                 
                 songsGrid.appendChild(songCard);
             });
-            
-            // Выбираем первую песню по умолчанию
-            selectSong(songs[0], false);
         }
 
         // Переключение песни (запуск/остановка)
         function toggleSong(song) {
             if (currentSong && currentSong.id === song.id) {
-                // Клик на текущую играющую песню - останавливаем или запускаем
+                // Клик на текущую играющую песню - останавливаем
                 if (isPlaying) {
                     stopMetronome();
                 } else {
                     startMetronome();
                 }
             } else {
-                // Клик на другую песню - останавливаем текущую и переключаемся
+                // Клик на другую песню - переключаемся
                 if (isPlaying) {
                     stopMetronome();
                 }
@@ -406,14 +479,18 @@ html
             songCard.classList.add('active');
             
             currentSong = song;
-            currentSongName.textContent = song.name;
             tempo = song.tempo;
-            currentTempo.textContent = tempo;
-            tempoControl.value = tempo;
             
-            // Обновляем индикатор битов и информацию о ритме
-            updateBeatIndicator();
-            updateRhythmInfo();
+            // Обновляем информацию о текущей песне
+            currentSongName.textContent = song.name;
+            currentTempo.textContent = tempo;
+            currentRhythm.textContent = song.rhythm === "quarter" ? "¼ ноты" : "⅛ ноты";
+            
+            // Показываем панель с информацией
+            currentSongInfo.style.display = 'flex';
+            
+            // Обновляем статус
+            updateStatus();
             
             // Если нужно запустить сразу
             if (startPlaying) {
@@ -421,73 +498,17 @@ html
             }
         }
 
-        // Обновление индикатора битов
-        function updateBeatIndicator() {
-            beatIndicator.innerHTML = '';
-            
-            if (currentSong.rhythm === "quarter") {
-                // Для песен с четвертными нотами: показываем 2 точки
-                const dotsCount = 2;
-                for (let i = 0; i < dotsCount; i++) {
-                    const dot = document.createElement('div');
-                    dot.className = 'beat-dot';
-                    dot.dataset.index = i;
-                    beatIndicator.appendChild(dot);
-                }
-            } else {
-                // Для песен с восьмыми нотами: показываем 4 точки
-                const dotsCount = 4;
-                for (let i = 0; i < dotsCount; i++) {
-                    const dot = document.createElement('div');
-                    dot.className = 'beat-dot';
-                    dot.dataset.index = i;
-                    beatIndicator.appendChild(dot);
-                }
-            }
-            
-            updateDotColors();
-        }
-
-        // Обновление цветов точек в зависимости от типа бита
-        function updateDotColors() {
-            const dots = document.querySelectorAll('.beat-dot');
-            
-            dots.forEach((dot, index) => {
-                const dotIndex = parseInt(dot.dataset.index);
-                
-                if (currentSong.rhythm === "quarter") {
-                    // Для четвертных нот: акцент на первой, вторая без акцента
-                    dot.classList.toggle('accent', dotIndex === 0);
-                    dot.classList.toggle('normal', dotIndex === 1);
-                } else {
-                    // Для восьмых нот: акцент через одну ноту
-                    // Чередование: 0-акцент, 1-нет, 2-акцент, 3-нет
-                    dot.classList.toggle('accent', dotIndex % 2 === 0);
-                    dot.classList.toggle('normal', dotIndex % 2 === 1);
-                }
-            });
-        }
-
-        // Обновление информации о ритме
-        function updateRhythmInfo() {
-            if (currentSong.rhythm === "quarter") {
-                rhythmInfo.textContent = "Ритм: Четвертные ноты (акцент на каждой первой четверти)";
-            } else {
-                rhythmInfo.textContent = "Ритм: Восьмые ноты (акцент на каждой первой восьмой)";
-            }
-        }
-
         // Обновление статуса
         function updateStatus() {
             if (isPlaying) {
-                statusText.textContent = "Метроном играет";
+                statusText.textContent = `Метроном играет: ${currentSong.name}`;
                 statusText.className = "status-playing";
                 if (currentSong) {
                     const songCard = document.querySelectorAll('.song-card')[currentSong.id - 1];
                     songCard.classList.add('playing');
                 }
             } else {
-                statusText.textContent = "Метроном остановлен";
+                statusText.textContent = "Выберите песню";
                 statusText.className = "status-stopped";
                 document.querySelectorAll('.song-card').forEach(card => {
                     card.classList.remove('playing');
@@ -495,13 +516,11 @@ html
             }
         }
 
-        // Изменение темпа
-        tempoControl.addEventListener('input', function() {
-            tempo = parseInt(this.value);
-            currentTempo.textContent = tempo;
-            
-            if (currentSong) {
-                currentSong.tempo = tempo;
+        // Обработчик кнопки остановки
+        stopBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (isPlaying) {
+                stopMetronome();
             }
         });
 
@@ -510,7 +529,7 @@ html
             if (isPlaying) return;
             
             isPlaying = true;
-            beatCounter = 0; // Сбрасываем счетчик битов
+            beatCounter = 0;
             updateStatus();
             
             // Создаем AudioContext при первом запуске
@@ -534,11 +553,6 @@ html
             updateStatus();
             
             clearInterval(timerID);
-            
-            // Сбрасываем индикаторы битов
-            document.querySelectorAll('.beat-dot').forEach(dot => {
-                dot.classList.remove('active');
-            });
         }
 
         function scheduler() {
@@ -546,25 +560,21 @@ html
                 scheduleNote(nextNoteTime);
                 
                 if (currentSong.rhythm === "quarter") {
-                    // Для четвертных нот: интервал = 60 / tempo
+                    // Для четвертных нот
                     nextNoteTime += (60.0 / tempo);
                 } else {
-                    // Для восьмых нот: интервал = 60 / tempo / 2
+                    // Для восьмых нот
                     nextNoteTime += (60.0 / tempo) / 2;
                 }
             }
         }
 
         function scheduleNote(time) {
-            // Для всех песен акцент чередуется: акцент - без акцента - акцент - без акцента
-            // Это просто проверка на четность счетчика
+            // Акцент чередуется: акцент - без акцента - акцент - без акцента
             const isAccented = (beatCounter % 2 === 0);
             
             // Воспроизводим звук
             playMetronomeSound(time, isAccented);
-            
-            // Обновляем визуальный индикатор
-            updateVisualBeatIndicator(beatCounter);
             
             // Увеличиваем счетчик битов
             beatCounter++;
@@ -582,15 +592,13 @@ html
             // Разная частота для акцентированного и обычного бита
             oscillator.frequency.value = accented ? 1000 : 600;
             
-            // Разная громкость и длительность для акцентированного и обычного бита
+            // Разная громкость и длительность
             gainNode.gain.setValueAtTime(0, time);
             
             if (accented) {
-                // Акцентированный бит - громче и длиннее
                 gainNode.gain.linearRampToValueAtTime(0.6, time + 0.01);
                 gainNode.gain.exponentialRampToValueAtTime(0.001, time + 0.15);
             } else {
-                // Обычный бит - тише и короче
                 gainNode.gain.linearRampToValueAtTime(0.3, time + 0.01);
                 gainNode.gain.exponentialRampToValueAtTime(0.001, time + 0.08);
             }
@@ -599,46 +607,21 @@ html
             oscillator.stop(time + 0.2);
         }
 
-        function updateVisualBeatIndicator(currentBeatIndex) {
-            // Сбрасываем все индикаторы
-            document.querySelectorAll('.beat-dot').forEach(dot => {
-                dot.classList.remove('active');
-            });
-            
-            // Определяем, какую точку активировать
-            let dotIndex;
-            
-            if (currentSong.rhythm === "quarter") {
-                // Для четвертных нот: 2 точки
-                dotIndex = currentBeatIndex % 2;
-            } else {
-                // Для восьмых нот: 4 точки
-                dotIndex = currentBeatIndex % 4;
-            }
-            
-            // Активируем текущий бит
-            const dots = document.querySelectorAll('.beat-dot');
-            if (dots[dotIndex]) {
-                dots[dotIndex].classList.add('active');
-            }
-            
-            // Через короткое время убираем активность
-            setTimeout(() => {
-                if (dots[dotIndex]) {
-                    dots[dotIndex].classList.remove('active');
-                }
-            }, 100);
-        }
-
         // Инициализация при загрузке
         document.addEventListener('DOMContentLoaded', function() {
             initSongs();
-            updateBeatIndicator();
             updateStatus();
             
             // Обработка закрытия вкладки/окна
             window.addEventListener('beforeunload', function() {
                 if (isPlaying) {
+                    stopMetronome();
+                }
+            });
+            
+            // Обработка паузы/скрытия вкладки
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden && isPlaying) {
                     stopMetronome();
                 }
             });
