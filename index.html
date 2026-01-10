@@ -735,7 +735,7 @@
             
             // Для 3 песни ВСЕ ноты одинаковые (частоту 800 Гц, средняя громкость)
             if (currentSong.id === 3) {
-                oscillator.frequency.value = 1000; // Одинаковая частота для всех нот
+                oscillator.frequency.value = 600; // Одинаковая частота для всех нот
                 gainNode.gain.setValueAtTime(0, time);
                 gainNode.gain.linearRampToValueAtTime(0.4, time + 0.01); // Средняя громкость
                 gainNode.gain.exponentialRampToValueAtTime(0.001, time + 0.12); // Средняя длительность
@@ -791,4 +791,5 @@
     </script>
 </body>
 </html>
+
 
