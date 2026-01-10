@@ -456,27 +456,27 @@
     </div>
 
     <script>
-        // Данные песен - В 3 песне четвертные ноты без акцента
+        // Данные песен (можно изменить темпы)
         const songs = [
-            { id: 1, name: "Give It Up", tempo: 124, rhythm: "eighth", hasAccent: true },
-            { id: 2, name: "Beer Drinkers & Hell Raisers", tempo: 133, rhythm: "eighth", hasAccent: true },
-            { id: 3, name: "Jesus Just Left Chicago", tempo: 72, rhythm: "quarter", hasAccent: false }, // Без акцента!
-            { id: 4, name: "I Got the Six", tempo: 150, rhythm: "eighth", hasAccent: true },
-            { id: 5, name: "Penthouse Eyes", tempo: 112, rhythm: "eighth", hasAccent: true },
-            { id: 6, name: "Concrete and Steel", tempo: 127, rhythm: "eighth", hasAccent: true },
-            { id: 7, name: "I Thank You", tempo: 111, rhythm: "eighth", hasAccent: true },
-            { id: 8, name: "Sharp Dressed Man", tempo: 125, rhythm: "eighth", hasAccent: true },
-            { id: 9, name: "Gimme All Your Lovin’", tempo: 123, rhythm: "eighth", hasAccent: true },
-            { id: 10, name: "What’s Up with That", tempo: 112, rhythm: "eighth", hasAccent: true },
-            { id: 11, name: "Tush", tempo: 144, rhythm: "eighth", hasAccent: true },
-            { id: 12, name: "I Need You Tonight", tempo: 98, rhythm: "eighth", hasAccent: true },
-            { id: 13, name: "Burger Man", tempo: 145, rhythm: "eighth", hasAccent: true },
-            { id: 14, name: "Punk Ass Boyfriend", tempo: 89, rhythm: "eighth", hasAccent: true },
-            { id: 15, name: "Thug", tempo: 120, rhythm: "eighth", hasAccent: true },
-            { id: 16, name: "Dirty Dog", tempo: 137, rhythm: "eighth", hasAccent: true },
-            { id: 17, name: "Tell It", tempo: 92, rhythm: "eighth", hasAccent: true },
-            { id: 18, name: "Sleeping Bag", tempo: 112, rhythm: "eighth", hasAccent: true },
-            { id: 19, name: "Can’t Stop Rockin’", tempo: 144, rhythm: "eighth", hasAccent: true }
+            { id: 1, name: "Give It Up", tempo: 124, rhythm: "eighth" },
+            { id: 2, name: "Beer Drinkers & Hell Raisers", tempo: 133, rhythm: "eighth" },
+            { id: 3, name: "Jesus Just Left Chicago", tempo: 72, rhythm: "quarter" }, // Теперь четвертные
+            { id: 4, name: "I Got the Six", tempo: 150, rhythm: "eighth" },
+            { id: 5, name: "Penthouse Eyes", tempo: 112, rhythm: "eighth" },
+            { id: 6, name: "Concrete and Steel", tempo: 127, rhythm: "eighth" },
+            { id: 7, name: "I Thank You", tempo: 111, rhythm: "eighth" },
+            { id: 8, name: "Sharp Dressed Man", tempo: 125, rhythm: "eighth" },
+            { id: 9, name: "Gimme All Your Lovin’", tempo: 123, rhythm: "eighth" },
+            { id: 10, name: "What’s Up with That", tempo: 112, rhythm: "eighth" },
+            { id: 11, name: "Tush", tempo: 144, rhythm: "eighth" },
+            { id: 12, name: "I Need You Tonight", tempo: 98, rhythm: "eighth" },
+            { id: 13, name: "Burger Man", tempo: 145, rhythm: "eighth" },
+            { id: 14, name: "Punk Ass Boyfriend", tempo: 89, rhythm: "eighth" },
+            { id: 15, name: "Thug", tempo: 120, rhythm: "eighth" },
+            { id: 16, name: "Dirty Dog", tempo: 137, rhythm: "eighth" },
+            { id: 17, name: "Tell It", tempo: 92, rhythm: "eighth" },
+            { id: 18, name: "Sleeping Bag", tempo: 112, rhythm: "eighth" },
+            { id: 19, name: "Can’t Stop Rockin’", tempo: 144, rhythm: "eighth" } // Теперь восьмые
         ];
 
         // Глобальные переменные
@@ -515,10 +515,10 @@
                 const songCard = document.createElement('div');
                 songCard.className = 'song-card';
                 
-                // Для 3 песни добавляем специальную пометку "без акцента"
+                // Для 3 песни добавляем специальную пометку "все ноты с акцентом"
                 let rhythmDisplay = song.rhythm === "quarter" ? "¼" : "⅛";
                 if (song.id === 3) {
-                    rhythmDisplay = "¼ (без акцента)";
+                    rhythmDisplay = "¼ (все с акцентом)";
                 }
                 
                 songCard.innerHTML = `
@@ -607,9 +607,9 @@
             currentSongName.textContent = song.name;
             currentTempo.textContent = tempo;
             
-            // Обновляем отображение ритма с учетом акцентов
+            // Обновляем отображение ритма
             if (song.id === 3) {
-                currentRhythm.textContent = "¼ (без акцента)";
+                currentRhythm.textContent = "¼ (все с акцентом)";
             } else {
                 currentRhythm.textContent = song.rhythm === "quarter" ? "¼" : "⅛";
             }
@@ -710,11 +710,11 @@
         }
 
         function scheduleNote(time) {
-            // Для 3 песни ВСЕГДА без акцента, для остальных - чередование
+            // Для 3 песни ВСЕ ноты с акцентом, для остальных - чередование
             let isAccented;
             if (currentSong.id === 3) {
-                // Песня 3: все ноты одинаковые (без акцента)
-                isAccented = false;
+                // Песня 3: ВСЕ ноты с акцентом
+                isAccented = true;
             } else {
                 // Остальные песни: обычное чередование акцентов
                 isAccented = (beatCounter % 2 === 0);
@@ -733,24 +733,18 @@
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
             
-            // Для 3 песни ВСЕ ноты одинаковые (частоту 800 Гц, средняя громкость)
-            if (currentSong.id === 3) {
-                oscillator.frequency.value = 600; // Одинаковая частота для всех нот
-                gainNode.gain.setValueAtTime(0, time);
-                gainNode.gain.linearRampToValueAtTime(0.4, time + 0.01); // Средняя громкость
-                gainNode.gain.exponentialRampToValueAtTime(0.001, time + 0.12); // Средняя длительность
+            // Используем те же параметры, что и для акцентированных нот в других песнях
+            oscillator.frequency.value = accented ? 1000 : 600;
+            gainNode.gain.setValueAtTime(0, time);
+            
+            if (accented) {
+                // Акцентированная нота: 1000 Гц, громкость 0.6, длительность 0.15 сек
+                gainNode.gain.linearRampToValueAtTime(0.6, time + 0.01);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, time + 0.15);
             } else {
-                // Для остальных песен обычные акценты
-                oscillator.frequency.value = accented ? 1000 : 600;
-                gainNode.gain.setValueAtTime(0, time);
-                
-                if (accented) {
-                    gainNode.gain.linearRampToValueAtTime(0.6, time + 0.01);
-                    gainNode.gain.exponentialRampToValueAtTime(0.001, time + 0.15);
-                } else {
-                    gainNode.gain.linearRampToValueAtTime(0.3, time + 0.01);
-                    gainNode.gain.exponentialRampToValueAtTime(0.001, time + 0.08);
-                }
+                // Обычная нота: 600 Гц, громкость 0.3, длительность 0.08 сек
+                gainNode.gain.linearRampToValueAtTime(0.3, time + 0.01);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, time + 0.08);
             }
             
             oscillator.start(time);
@@ -791,5 +785,3 @@
     </script>
 </body>
 </html>
-
-
