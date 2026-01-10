@@ -456,27 +456,27 @@
     </div>
 
     <script>
-        // Данные песен (можно изменить темпы)
+        // Данные песен - В 3 песне четвертные ноты без акцента
         const songs = [
-            { id: 1, name: "Give It Up", tempo: 124, rhythm: "eighth" },
-            { id: 2, name: "Beer Drinkers & Hell Raisers", tempo: 133, rhythm: "eighth" },
-            { id: 3, name: "Jesus Just Left Chicago", tempo: 72, rhythm: "quarter" }, // Теперь четвертные
-            { id: 4, name: "I Got the Six", tempo: 150, rhythm: "eighth" },
-            { id: 5, name: "Penthouse Eyes", tempo: 112, rhythm: "eighth" },
-            { id: 6, name: "Concrete and Steel", tempo: 127, rhythm: "eighth" },
-            { id: 7, name: "I Thank You", tempo: 111, rhythm: "eighth" },
-            { id: 8, name: "Sharp Dressed Man", tempo: 125, rhythm: "eighth" },
-            { id: 9, name: "Gimme All Your Lovin’", tempo: 123, rhythm: "eighth" },
-            { id: 10, name: "What’s Up with That", tempo: 112, rhythm: "eighth" },
-            { id: 11, name: "Tush", tempo: 144, rhythm: "eighth" },
-            { id: 12, name: "I Need You Tonight", tempo: 98, rhythm: "eighth" },
-            { id: 13, name: "Burger Man", tempo: 145, rhythm: "eighth" },
-            { id: 14, name: "Punk Ass Boyfriend", tempo: 89, rhythm: "eighth" },
-            { id: 15, name: "Thug", tempo: 120, rhythm: "eighth" },
-            { id: 16, name: "Dirty Dog", tempo: 137, rhythm: "eighth" },
-            { id: 17, name: "Tell It", tempo: 92, rhythm: "eighth" },
-            { id: 18, name: "Sleeping Bag", tempo: 112, rhythm: "eighth" },
-            { id: 19, name: "Can’t Stop Rockin’", tempo: 144, rhythm: "eighth" } // Теперь восьмые
+            { id: 1, name: "Give It Up", tempo: 124, rhythm: "eighth", hasAccent: true },
+            { id: 2, name: "Beer Drinkers & Hell Raisers", tempo: 133, rhythm: "eighth", hasAccent: true },
+            { id: 3, name: "Jesus Just Left Chicago", tempo: 72, rhythm: "quarter", hasAccent: false }, // Без акцента!
+            { id: 4, name: "I Got the Six", tempo: 150, rhythm: "eighth", hasAccent: true },
+            { id: 5, name: "Penthouse Eyes", tempo: 112, rhythm: "eighth", hasAccent: true },
+            { id: 6, name: "Concrete and Steel", tempo: 127, rhythm: "eighth", hasAccent: true },
+            { id: 7, name: "I Thank You", tempo: 111, rhythm: "eighth", hasAccent: true },
+            { id: 8, name: "Sharp Dressed Man", tempo: 125, rhythm: "eighth", hasAccent: true },
+            { id: 9, name: "Gimme All Your Lovin’", tempo: 123, rhythm: "eighth", hasAccent: true },
+            { id: 10, name: "What’s Up with That", tempo: 112, rhythm: "eighth", hasAccent: true },
+            { id: 11, name: "Tush", tempo: 144, rhythm: "eighth", hasAccent: true },
+            { id: 12, name: "I Need You Tonight", tempo: 98, rhythm: "eighth", hasAccent: true },
+            { id: 13, name: "Burger Man", tempo: 145, rhythm: "eighth", hasAccent: true },
+            { id: 14, name: "Punk Ass Boyfriend", tempo: 89, rhythm: "eighth", hasAccent: true },
+            { id: 15, name: "Thug", tempo: 120, rhythm: "eighth", hasAccent: true },
+            { id: 16, name: "Dirty Dog", tempo: 137, rhythm: "eighth", hasAccent: true },
+            { id: 17, name: "Tell It", tempo: 92, rhythm: "eighth", hasAccent: true },
+            { id: 18, name: "Sleeping Bag", tempo: 112, rhythm: "eighth", hasAccent: true },
+            { id: 19, name: "Can’t Stop Rockin’", tempo: 144, rhythm: "eighth", hasAccent: true }
         ];
 
         // Глобальные переменные
@@ -489,7 +489,7 @@
         let lookahead = 25.0;
         let scheduleAheadTime = 0.1;
         let beatCounter = 0;
-        let audioEnabled = false; // Флаг включения звука для iOS
+        let audioEnabled = false;
         let isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
         // Элементы DOM
@@ -514,13 +514,20 @@
             songs.forEach(song => {
                 const songCard = document.createElement('div');
                 songCard.className = 'song-card';
+                
+                // Для 3 песни добавляем специальную пометку "без акцента"
+                let rhythmDisplay = song.rhythm === "quarter" ? "¼" : "⅛";
+                if (song.id === 3) {
+                    rhythmDisplay = "¼ (без акцента)";
+                }
+                
                 songCard.innerHTML = `
                     <div class="play-indicator"></div>
                     <div class="song-number">${song.id}</div>
                     <div class="song-name">${song.name}</div>
                     <div class="song-details">
                         <div class="song-tempo">${song.tempo} BPM</div>
-                        <div class="song-rhythm">${song.rhythm === "quarter" ? "¼" : "⅛"}</div>
+                        <div class="song-rhythm">${rhythmDisplay}</div>
                     </div>
                 `;
                 
@@ -536,7 +543,6 @@
 
         // Обработчик клика по песне
         function handleSongClick(song) {
-            // Для iOS: если звук не активирован, показываем предупреждение
             if (isIOS && !audioEnabled) {
                 showIOSWarning();
                 return;
@@ -569,8 +575,6 @@
 
         // Активация звука для iOS
         function activateIOSAudio() {
-            // Создаем и сразу останавливаем короткий звук
-            // Это "разблокирует" аудиоконтекст для iOS
             const silentAudioContext = new (window.AudioContext || window.webkitAudioContext)();
             const oscillator = silentAudioContext.createOscillator();
             const gainNode = silentAudioContext.createGain();
@@ -584,8 +588,6 @@
             
             audioEnabled = true;
             hideIOSWarning();
-            
-            // Сохраняем в localStorage, что звук уже активирован
             localStorage.setItem('metronomeAudioEnabled', 'true');
         }
 
@@ -604,7 +606,13 @@
             
             currentSongName.textContent = song.name;
             currentTempo.textContent = tempo;
-            currentRhythm.textContent = song.rhythm === "quarter" ? "¼" : "⅛";
+            
+            // Обновляем отображение ритма с учетом акцентов
+            if (song.id === 3) {
+                currentRhythm.textContent = "¼ (без акцента)";
+            } else {
+                currentRhythm.textContent = song.rhythm === "quarter" ? "¼" : "⅛";
+            }
             
             currentSongInfo.style.display = 'flex';
         }
@@ -652,15 +660,12 @@
             beatCounter = 0;
             updateStatus();
             
-            // Создаем AudioContext только при первом запуске
             if (!audioContext) {
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 
-                // Для iOS: если аудио еще не было активировано, пытаемся возобновить
                 if (isIOS && !audioEnabled) {
                     audioContext.resume().then(() => {
                         audioEnabled = true;
-                        // Запускаем метроном после активации
                         startMetronomeInternal();
                     }).catch(e => {
                         console.error("Не удалось активировать звук на iOS:", e);
@@ -705,7 +710,16 @@
         }
 
         function scheduleNote(time) {
-            const isAccented = (beatCounter % 2 === 0);
+            // Для 3 песни ВСЕГДА без акцента, для остальных - чередование
+            let isAccented;
+            if (currentSong.id === 3) {
+                // Песня 3: все ноты одинаковые (без акцента)
+                isAccented = false;
+            } else {
+                // Остальные песни: обычное чередование акцентов
+                isAccented = (beatCounter % 2 === 0);
+            }
+            
             playMetronomeSound(time, isAccented);
             beatCounter++;
         }
@@ -719,15 +733,24 @@
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
             
-            oscillator.frequency.value = accented ? 1000 : 600;
-            gainNode.gain.setValueAtTime(0, time);
-            
-            if (accented) {
-                gainNode.gain.linearRampToValueAtTime(0.6, time + 0.01);
-                gainNode.gain.exponentialRampToValueAtTime(0.001, time + 0.15);
+            // Для 3 песни ВСЕ ноты одинаковые (частоту 800 Гц, средняя громкость)
+            if (currentSong.id === 3) {
+                oscillator.frequency.value = 600; // Одинаковая частота для всех нот
+                gainNode.gain.setValueAtTime(0, time);
+                gainNode.gain.linearRampToValueAtTime(0.4, time + 0.01); // Средняя громкость
+                gainNode.gain.exponentialRampToValueAtTime(0.001, time + 0.12); // Средняя длительность
             } else {
-                gainNode.gain.linearRampToValueAtTime(0.3, time + 0.01);
-                gainNode.gain.exponentialRampToValueAtTime(0.001, time + 0.08);
+                // Для остальных песен обычные акценты
+                oscillator.frequency.value = accented ? 1000 : 600;
+                gainNode.gain.setValueAtTime(0, time);
+                
+                if (accented) {
+                    gainNode.gain.linearRampToValueAtTime(0.6, time + 0.01);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, time + 0.15);
+                } else {
+                    gainNode.gain.linearRampToValueAtTime(0.3, time + 0.01);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, time + 0.08);
+                }
             }
             
             oscillator.start(time);
@@ -739,17 +762,14 @@
             initSongs();
             updateStatus();
             
-            // Проверяем, был ли уже активирован звук
             if (localStorage.getItem('metronomeAudioEnabled') === 'true') {
                 audioEnabled = true;
             }
             
-            // Для iOS показываем предупреждение при первом открытии
             if (isIOS && !audioEnabled) {
                 // Не показываем сразу, только при попытке запустить метроном
             }
             
-            // Глобальный обработчик для активации звука при любом клике
             document.addEventListener('click', function() {
                 if (isIOS && !audioEnabled) {
                     activateIOSAudio();
