@@ -77,7 +77,7 @@
         .songs-grid {
             flex: 1;
             display: grid;
-            grid-template-columns: repeat(2, 1fr); /* Строго 2 колонки */
+            grid-template-columns: repeat(2, 1fr);
             gap: 6px;
             padding: 8px;
             overflow-y: auto;
@@ -258,6 +258,56 @@
             transform: scale(0.95);
         }
 
+        /* iOS-specific fixes */
+        .ios-warning {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 1000;
+            border: 2px solid #00dbde;
+            max-width: 300px;
+            backdrop-filter: blur(10px);
+        }
+
+        .ios-warning.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .ios-warning h3 {
+            color: #00dbde;
+            margin-bottom: 10px;
+        }
+
+        .ios-warning p {
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .ios-warning button {
+            background: linear-gradient(90deg, #00dbde, #fc00ff);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
         @media (max-height: 700px) {
             .song-card {
                 min-height: 90px;
@@ -347,8 +397,6 @@
             }
         }
 
-        /* Убираем все медиа-запросы для ландшафтной ориентации, чтобы оставалось 2 колонки */
-        /* Для очень маленьких экранов */
         @media (max-width: 320px) {
             .song-card {
                 min-height: 85px;
@@ -397,6 +445,14 @@
             </div>
             <button class="stop-btn" id="stop-btn">Стоп</button>
         </div>
+
+        <!-- iOS предупреждение -->
+        <div class="ios-warning" id="ios-warning">
+            <h3>Внимание для iOS</h3>
+            <p>На iPhone звук метронома включается только после первого касания экрана.</p>
+            <p>Пожалуйста, нажмите кнопку ниже для активации звука.</p>
+            <button id="ios-activate-btn">Активировать звук</button>
+        </div>
     </div>
 
     <script>
@@ -433,6 +489,8 @@
         let lookahead = 25.0;
         let scheduleAheadTime = 0.1;
         let beatCounter = 0;
+        let audioEnabled = false; // Флаг включения звука для iOS
+        let isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
         // Элементы DOM
         const songsGrid = document.getElementById('songs-grid');
@@ -442,6 +500,8 @@
         const currentRhythm = document.getElementById('current-rhythm');
         const currentSongInfo = document.getElementById('current-song-info');
         const stopBtn = document.getElementById('stop-btn');
+        const iosWarning = document.getElementById('ios-warning');
+        const iosActivateBtn = document.getElementById('ios-activate-btn');
 
         // Храним ссылки на все карточки
         let songCards = {};
@@ -449,7 +509,7 @@
         // Инициализация песен
         function initSongs() {
             songsGrid.innerHTML = '';
-            songCards = {}; // Очищаем объект
+            songCards = {};
             
             songs.forEach(song => {
                 const songCard = document.createElement('div');
@@ -464,10 +524,8 @@
                     </div>
                 `;
                 
-                // Сохраняем ссылку на карточку в объекте по ID песни
                 songCards[song.id] = songCard;
                 
-                // Обработчик клика
                 songCard.addEventListener('click', () => {
                     handleSongClick(song);
                 });
@@ -478,15 +536,19 @@
 
         // Обработчик клика по песне
         function handleSongClick(song) {
+            // Для iOS: если звук не активирован, показываем предупреждение
+            if (isIOS && !audioEnabled) {
+                showIOSWarning();
+                return;
+            }
+            
             if (currentSong && currentSong.id === song.id) {
-                // Клик на текущую песню
                 if (isPlaying) {
                     stopMetronome();
                 } else {
                     startMetronome();
                 }
             } else {
-                // Клик на другую песню
                 if (isPlaying) {
                     stopMetronome();
                 }
@@ -495,14 +557,44 @@
             }
         }
 
+        // Показать предупреждение для iOS
+        function showIOSWarning() {
+            iosWarning.classList.add('show');
+        }
+
+        // Скрыть предупреждение для iOS
+        function hideIOSWarning() {
+            iosWarning.classList.remove('show');
+        }
+
+        // Активация звука для iOS
+        function activateIOSAudio() {
+            // Создаем и сразу останавливаем короткий звук
+            // Это "разблокирует" аудиоконтекст для iOS
+            const silentAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = silentAudioContext.createOscillator();
+            const gainNode = silentAudioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(silentAudioContext.destination);
+            
+            gainNode.gain.setValueAtTime(0.001, silentAudioContext.currentTime);
+            oscillator.start(silentAudioContext.currentTime);
+            oscillator.stop(silentAudioContext.currentTime + 0.001);
+            
+            audioEnabled = true;
+            hideIOSWarning();
+            
+            // Сохраняем в localStorage, что звук уже активирован
+            localStorage.setItem('metronomeAudioEnabled', 'true');
+        }
+
         // Выбор песни
         function selectSong(song) {
-            // Сбрасываем активный класс у всех карточек
             Object.values(songCards).forEach(card => {
                 card.classList.remove('active');
             });
             
-            // Добавляем активный класс только выбранной карточке
             if (songCards[song.id]) {
                 songCards[song.id].classList.add('active');
             }
@@ -523,20 +615,16 @@
                 statusText.textContent = `Играет: ${currentSong.name}`;
                 statusText.className = "status-playing";
                 
-                // Добавляем класс playing только текущей карточке
                 if (currentSong && songCards[currentSong.id]) {
-                    // Сначала убираем playing у всех
                     Object.values(songCards).forEach(card => {
                         card.classList.remove('playing');
                     });
-                    // Затем добавляем текущей
                     songCards[currentSong.id].classList.add('playing');
                 }
             } else {
                 statusText.textContent = "Выберите песню";
                 statusText.className = "status-stopped";
                 
-                // Убираем playing у всех карточек
                 Object.values(songCards).forEach(card => {
                     card.classList.remove('playing');
                 });
@@ -551,6 +639,11 @@
             }
         });
 
+        // Обработчик кнопки активации звука для iOS
+        iosActivateBtn.addEventListener('click', function() {
+            activateIOSAudio();
+        });
+
         // Функции метронома
         function startMetronome() {
             if (isPlaying) return;
@@ -559,10 +652,30 @@
             beatCounter = 0;
             updateStatus();
             
+            // Создаем AudioContext только при первом запуске
             if (!audioContext) {
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Для iOS: если аудио еще не было активировано, пытаемся возобновить
+                if (isIOS && !audioEnabled) {
+                    audioContext.resume().then(() => {
+                        audioEnabled = true;
+                        // Запускаем метроном после активации
+                        startMetronomeInternal();
+                    }).catch(e => {
+                        console.error("Не удалось активировать звук на iOS:", e);
+                        showIOSWarning();
+                        isPlaying = false;
+                        updateStatus();
+                    });
+                    return;
+                }
             }
             
+            startMetronomeInternal();
+        }
+
+        function startMetronomeInternal() {
             if (audioContext.state === 'suspended') {
                 audioContext.resume();
             }
@@ -625,6 +738,23 @@
         document.addEventListener('DOMContentLoaded', function() {
             initSongs();
             updateStatus();
+            
+            // Проверяем, был ли уже активирован звук
+            if (localStorage.getItem('metronomeAudioEnabled') === 'true') {
+                audioEnabled = true;
+            }
+            
+            // Для iOS показываем предупреждение при первом открытии
+            if (isIOS && !audioEnabled) {
+                // Не показываем сразу, только при попытке запустить метроном
+            }
+            
+            // Глобальный обработчик для активации звука при любом клике
+            document.addEventListener('click', function() {
+                if (isIOS && !audioEnabled) {
+                    activateIOSAudio();
+                }
+            }, { once: true });
             
             window.addEventListener('beforeunload', function() {
                 if (isPlaying) {
