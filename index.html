@@ -127,13 +127,47 @@
         .song-card.playing {
             background: rgba(0, 176, 155, 0.25);
             border-color: #00b09b;
-            animation: pulse 2s infinite;
         }
 
-        @keyframes pulse {
-            0% { box-shadow: 0 0 3px rgba(0, 176, 155, 0.3); }
-            50% { box-shadow: 0 0 6px rgba(0, 176, 155, 0.6); }
-            100% { box-shadow: 0 0 3px rgba(0, 176, 155, 0.3); }
+        /* Мигание карточки в такт метроному */
+        .song-card.beat-flash {
+            animation: beatFlash 0.1s ease-out;
+        }
+
+        /* Для 3 песни (четвертные ноты) - более долгое мигание */
+        .song-card.quarter-beat-flash {
+            animation: quarterBeatFlash 0.2s ease-out;
+        }
+
+        @keyframes beatFlash {
+            0% {
+                background: rgba(255, 255, 255, 0.9);
+                box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+                transform: scale(1.02);
+            }
+            100% {
+                background: rgba(0, 176, 155, 0.25);
+                box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+                transform: scale(1);
+            }
+        }
+
+        @keyframes quarterBeatFlash {
+            0% {
+                background: rgba(255, 255, 255, 0.9);
+                box-shadow: 0 0 25px rgba(255, 255, 255, 0.9);
+                transform: scale(1.03);
+            }
+            50% {
+                background: rgba(255, 255, 255, 0.6);
+                box-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
+                transform: scale(1.015);
+            }
+            100% {
+                background: rgba(0, 176, 155, 0.25);
+                box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+                transform: scale(1);
+            }
         }
 
         .song-number {
@@ -479,6 +513,7 @@
             { id: 19, name: "Can’t Stop Rockin’", tempo: 144, rhythm: "eighth" } // Теперь восьмые
         ];
 
+
         // Глобальные переменные
         let currentSong = null;
         let isPlaying = false;
@@ -541,6 +576,33 @@
             });
         }
 
+        // Визуальное мигание карточки
+        function flashCard() {
+            if (!currentSong || !songCards[currentSong.id]) return;
+            
+            const card = songCards[currentSong.id];
+            
+            // Удаляем предыдущие классы анимации
+            card.classList.remove('beat-flash', 'quarter-beat-flash');
+            
+            // Принудительный reflow для перезапуска анимации
+            void card.offsetWidth;
+            
+            // Добавляем соответствующий класс анимации
+            if (currentSong.rhythm === "quarter") {
+                // Для четвертных нот - более долгое мигание
+                card.classList.add('quarter-beat-flash');
+            } else {
+                // Для восьмых нот - короткое мигание
+                card.classList.add('beat-flash');
+            }
+            
+            // Удаляем класс анимации после завершения
+            setTimeout(() => {
+                card.classList.remove('beat-flash', 'quarter-beat-flash');
+            }, currentSong.rhythm === "quarter" ? 200 : 100);
+        }
+
         // Обработчик клика по песне
         function handleSongClick(song) {
             if (isIOS && !audioEnabled) {
@@ -594,7 +656,7 @@
         // Выбор песни
         function selectSong(song) {
             Object.values(songCards).forEach(card => {
-                card.classList.remove('active');
+                card.classList.remove('active', 'playing');
             });
             
             if (songCards[song.id]) {
@@ -721,6 +783,10 @@
             }
             
             playMetronomeSound(time, isAccented);
+            
+            // Запускаем визуальное мигание карточки
+            flashCard();
+            
             beatCounter++;
         }
 
@@ -734,7 +800,7 @@
             gainNode.connect(audioContext.destination);
             
             // Используем те же параметры, что и для акцентированных нот в других песнях
-            oscillator.frequency.value = accented ? 1000 : 600;
+            oscillator.frequency.value = accented ? 2000 : 600;
             gainNode.gain.setValueAtTime(0, time);
             
             if (accented) {
@@ -785,4 +851,3 @@
     </script>
 </body>
 </html>
-
